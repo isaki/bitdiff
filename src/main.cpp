@@ -35,7 +35,7 @@ int main(int argc, char ** argv)
         desc.add_options()
             ("help,h", "print this message message")
             ("version,v", "display version information")
-            ;
+        ;
 
         po::options_description hidden("Hidden options");
         hidden.add_options()
@@ -78,7 +78,16 @@ int main(int argc, char ** argv)
             return 1;
         }
 
-        bd::BitDiff diff(vm["fileA"].as<std::string>(), vm["fileB"].as<std::string>(), BUFFER_SIZE);
+        const std::string fileA = vm["fileA"].as<std::string>();
+        const std::string fileB = vm["fileB"].as<std::string>();
+
+        if (fileA == fileB)
+        {
+            std::cerr << "File A and B are the same path" << std::endl;
+            return 0;
+        }
+
+        bd::BitDiff diff(fileA, fileB, BUFFER_SIZE);
 
         const uintmax_t diffCount = diff.process(std::cout);
         std::cerr << diffCount << " difference";
@@ -89,6 +98,11 @@ int main(int argc, char ** argv)
         }
 
         std::cerr << " found" << std::endl;
+
+        if (diffCount == 0)
+        {
+            return 0;
+        }
     }
     catch (const std::exception& e)
     {
@@ -96,5 +110,6 @@ int main(int argc, char ** argv)
         return 10;
     }
 
-    return 0;
+    // Differences found.
+    return 1;
 }
