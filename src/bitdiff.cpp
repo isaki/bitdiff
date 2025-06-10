@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <cstring>
 #include <algorithm>
 
 #include <cstdint>
@@ -17,6 +16,7 @@
 #include "bitdiff/bitdiff.hpp"
 
 namespace bd = isaki::bitdiff;
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -39,6 +39,15 @@ namespace
         }
     };
 
+    // This function is specific to GCC/Clang compilers
+    inline int _popcount(unsigned char c) {
+#if defined(__GNUC__)
+        return __builtin_popcount(c);
+#else
+        #error "GNU Extensions not supported"
+#endif
+    }
+
     inline void _closeStream(std::ifstream * s)
     {
         if (s->is_open())
@@ -47,13 +56,18 @@ namespace
         }
     }
 
-    // This function is specific to GCC/Clang compilers
-    inline int _popcount(unsigned char c) {
-#if defined(__GNUC__)
-        return __builtin_popcount(c);
-#else
-        #error "GNU Extensions not supported"
-#endif
+    void _openStream(std::ifstream * s, const fs::path& path)
+    {
+        s->open(path, std::ios_base::binary | std::ios_base::in);
+        if (!s->is_open())
+        {
+            std::string err;
+            err.append("Unable to open ");
+            err.append(path.string());
+            throw std::runtime_error(err);
+        }
+        
+        s->exceptions(std::ifstream::badbit);
     }
 
     size_t _fillBuffer(std::ifstream * in, unsigned char * buffer, const size_t len)
@@ -86,38 +100,17 @@ bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const
         m_path_a.assign(a);
         m_path_b.assign(b);
 
-        m_fsize_a = std::filesystem::file_size(m_path_a);
-        m_fsize_b = std::filesystem::file_size(m_path_b);
+        m_fsize_a = fs::file_size(m_path_a);
+        m_fsize_b = fs::file_size(m_path_b);
 
         m_is_a = new std::ifstream();
-        m_is_a->open(m_path_a, std::ios_base::binary | std::ios_base::in);
-        if (!m_is_a->is_open())
-        {
-            std::string err;
-            err.append("Unable to open ");
-            err.append(a);
-            throw std::runtime_error(err);
-        }
-        
-        m_is_a->exceptions(std::ifstream::badbit);
+        _openStream(m_is_a, m_path_a);
 
         m_is_b = new std::ifstream();
-        m_is_b->open(m_path_b, std::ios_base::binary | std::ios_base::in);
-        if (!m_is_b->is_open())
-        {
-            std::string err;
-            err.append("Unable to open ");
-            err.append(b);
-            throw std::runtime_error(err);
-        }
-        
-        m_is_b->exceptions(std::ifstream::badbit);
+        _openStream(m_is_b, m_path_b);
 
-        m_buffer_a = new unsigned char[bufferSize];
-        memset(m_buffer_a, 0, bufferSize * sizeof(char));
-
-        m_buffer_b = new unsigned char[bufferSize];
-        memset(m_buffer_b, 0, bufferSize * sizeof(char));
+        m_buffer_a = new unsigned char[bufferSize]();
+        m_buffer_b = new unsigned char[bufferSize]();
     }
     catch (const std::exception& e)
     {
