@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 4.0)
 
 project(
     BitDiff
-    VERSION 1.0.1
+    VERSION 1.0.2
     LANGUAGES CXX)
 
 # Configure C++20

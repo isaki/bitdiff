@@ -23,13 +23,13 @@ namespace
     inline constexpr size_t OFFSET_WIDTH = sizeof(uintmax_t) * (CHAR_BIT >> 2);
     inline constexpr size_t BYTE_WIDTH = sizeof(char) * (CHAR_BIT >> 2);
 
-    struct _of_state_cache_s
+    struct _ostream_state_cache_s
     {
         std::ostream::iostate state;
         std::ostream::fmtflags flags;
         std::ostream * s;
 
-        ~_of_state_cache_s()
+        ~_ostream_state_cache_s()
         {
             if (s != nullptr)
             {
@@ -145,7 +145,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
     }
 
     // This will get automatically cleaned when it goes out of scope.
-    const struct _of_state_cache_s outputCache = {
+    const struct _ostream_state_cache_s outputCache = {
         .state = output.exceptions(),
         .flags = output.flags(),
         .s = &output
