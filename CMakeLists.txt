@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
 # Compiler flags
-add_compile_options(-O2 -pipe -Wall -Wextra -Wpedantic -Werror)
+add_compile_options(-O2 -pipe -Wall -Wextra -Wpedantic -Werror -Wtrampolines -Wimplicit-fallthrough -Wformat -fPIE -pie)
 
 # Configure CMAKE
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
