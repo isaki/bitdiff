@@ -87,7 +87,12 @@ int main(int argc, char ** argv)
             return 0;
         }
 
+        std::cerr << "Initializing diff object" << std::endl;
+
         bd::BitDiff diff(fileA, fileB, BUFFER_SIZE);
+
+        std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
+        std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;
 
         const uintmax_t diffCount = diff.process(std::cout);
         std::cerr << diffCount << " difference";

@@ -20,6 +20,10 @@ namespace isaki::bitdiff
 
             // Returns the number of differences.
             uintmax_t process(std::ostream& output);
+
+            uintmax_t getFileASize() const noexcept;
+            uintmax_t getFileBSize() const noexcept;
+
         private:
             BitDiff() = delete;
             BitDiff(const BitDiff&) = delete;

@@ -120,6 +120,16 @@ isaki::bitdiff::BitDiff::~BitDiff()
     cleanup();
 }
 
+uintmax_t isaki::bitdiff::BitDiff::getFileASize() const noexcept
+{
+    return m_fsize_a;
+}
+
+uintmax_t isaki::bitdiff::BitDiff::getFileBSize() const noexcept
+{
+    return m_fsize_b;
+}
+
 uintmax_t isaki::bitdiff::BitDiff::process(std::ostream& output)
 {
     if (!m_valid)
