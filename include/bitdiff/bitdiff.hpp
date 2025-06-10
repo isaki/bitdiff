@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: Apache-2.0 */
 /* Copyright 2025 isaki */
 
 #ifndef __BITDIFF_HPP__
@@ -12,14 +13,20 @@
 
 namespace isaki::bitdiff
 {
-    class BitDiff
+    typedef struct final
+    {
+        uintmax_t bytes;
+        uintmax_t bits;
+    } diff_count;
+
+    class BitDiff final
     {
         public:
             BitDiff(const std::string_view& a, const std::string_view& b, const size_t bufferSize);
             ~BitDiff();
 
             // Returns the number of differences.
-            uintmax_t process(std::ostream& output);
+            diff_count process(std::ostream& output, const bool printHeader);
 
             uintmax_t getFileASize() const noexcept;
             uintmax_t getFileBSize() const noexcept;
@@ -39,12 +46,11 @@ namespace isaki::bitdiff
             std::filesystem::path m_path_a;
             std::filesystem::path m_path_b;
 
-            char * m_buffer_a;
-            char * m_buffer_b;
+            unsigned char * m_buffer_a;
+            unsigned char * m_buffer_b;
             std::ifstream * m_is_a;
             std::ifstream * m_is_b;
     };
-            
 }
 
 #endif

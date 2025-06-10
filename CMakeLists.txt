@@ -1,10 +1,11 @@
-# Copyright 2024 isaki
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2025 isaki
 
 cmake_minimum_required(VERSION 4.0)
 
 project(
     Bit-Diff
-    VERSION 0.0.1
+    VERSION 0.0.2
     LANGUAGES CXX)
 
 # Configure C++20

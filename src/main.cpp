@@ -1,4 +1,5 @@
-/* Copyright 2024 isaki */
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2025 isaki */
 
 #include <iostream>
 #include <filesystem>
@@ -35,6 +36,7 @@ int main(int argc, char ** argv)
         desc.add_options()
             ("help,h", "print this message message")
             ("version,v", "display version information")
+            ("print-header", "add a header to the output")
         ;
 
         po::options_description hidden("Hidden options");
@@ -74,7 +76,7 @@ int main(int argc, char ** argv)
 
         if (!vm.count("fileA") || !vm.count("fileB"))
         {
-            std::cerr << "Invalid usage" << std::endl;
+            std::cerr << "Invalid usage; please run with --help" << std::endl;
             return 1;
         }
 
@@ -94,17 +96,23 @@ int main(int argc, char ** argv)
         std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
         std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;
 
-        const uintmax_t diffCount = diff.process(std::cout);
-        std::cerr << diffCount << " difference";
+        const bd::diff_count dcount = diff.process(std::cout, vm.count("print-header"));
 
-        if (diffCount != 1)
+        std::cerr << "Found " << dcount.bits << " bit difference";
+        if (dcount.bits != 1)
         {
             std::cerr << "s";
         }
 
-        std::cerr << " found" << std::endl;
+        std::cerr << " across " << dcount.bytes << " byte";
+        if (dcount.bytes != 1)
+        {
+            std::cerr << "s";
+        }
 
-        if (diffCount == 0)
+        std::cerr << std::endl;
+
+        if (dcount.bytes == 0)
         {
             return 0;
         }

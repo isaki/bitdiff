@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: Apache-2.0 */
 /* Copyright 2025 isaki */
 
 #include <iostream>
@@ -14,6 +15,8 @@
 #include <climits>
 
 #include "bitdiff/bitdiff.hpp"
+
+namespace bd = isaki::bitdiff;
 
 namespace
 {
@@ -44,13 +47,24 @@ namespace
         }
     }
 
-    size_t _fillBuffer(std::ifstream * in, char * buffer, const size_t len)
+    // This function is specific to GCC/Clang compilers
+    inline int _popcount(unsigned char c) {
+#if defined(__GNUC__)
+        return __builtin_popcount(c);
+#else
+        #error "GNU Extensions not supported"
+#endif
+    }
+
+    size_t _fillBuffer(std::ifstream * in, unsigned char * buffer, const size_t len)
     {
         size_t read = 0;
 
+        char * sbuff = reinterpret_cast<char *>(buffer);
+
         while (read < len && !in->eof())
         {
-            in->read(buffer, len - read);
+            in->read(sbuff, len - read);
             read += in->gcount();
         }
 
@@ -58,7 +72,7 @@ namespace
     }
 }
 
-isaki::bitdiff::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const size_t bufferSize) :
+bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const size_t bufferSize) :
     m_bsize(bufferSize),
     m_valid(true),
     m_buffer_a(nullptr),
@@ -99,10 +113,10 @@ isaki::bitdiff::BitDiff::BitDiff(const std::string_view& a, const std::string_vi
         
         m_is_b->exceptions(std::ifstream::badbit);
 
-        m_buffer_a = new char[bufferSize];
+        m_buffer_a = new unsigned char[bufferSize];
         memset(m_buffer_a, 0, bufferSize * sizeof(char));
 
-        m_buffer_b = new char[bufferSize];
+        m_buffer_b = new unsigned char[bufferSize];
         memset(m_buffer_b, 0, bufferSize * sizeof(char));
     }
     catch (const std::exception& e)
@@ -115,22 +129,22 @@ isaki::bitdiff::BitDiff::BitDiff(const std::string_view& a, const std::string_vi
     }
 }
 
-isaki::bitdiff::BitDiff::~BitDiff()
+bd::BitDiff::~BitDiff()
 {
     cleanup();
 }
 
-uintmax_t isaki::bitdiff::BitDiff::getFileASize() const noexcept
+uintmax_t bd::BitDiff::getFileASize() const noexcept
 {
     return m_fsize_a;
 }
 
-uintmax_t isaki::bitdiff::BitDiff::getFileBSize() const noexcept
+uintmax_t bd::BitDiff::getFileBSize() const noexcept
 {
     return m_fsize_b;
 }
 
-uintmax_t isaki::bitdiff::BitDiff::process(std::ostream& output)
+bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader)
 {
     if (!m_valid)
     {
@@ -161,7 +175,12 @@ uintmax_t isaki::bitdiff::BitDiff::process(std::ostream& output)
 
     // First, we need to read from each buffer.    
     uintmax_t bytesRead = 0;
-    uintmax_t ret = 0;
+    bd::diff_count ret = { .bytes = 0, .bits = 0 };
+
+    if (printHeader)
+    {
+        output << "Offset\tByte in " << m_path_a << "\tByte in " << m_path_b << std::endl;
+    }
 
     for (;;)
     {
@@ -172,13 +191,17 @@ uintmax_t isaki::bitdiff::BitDiff::process(std::ostream& output)
 
         for (size_t i = 0; i < tmpX; ++i)
         {
-            const char a = m_buffer_a[i];
-            const char b = m_buffer_b[i];
+            const unsigned char a = m_buffer_a[i];
+            const unsigned char b = m_buffer_b[i];
+
             if (a != b)
             {
-                ++ret;
-                output
-                    << "0x" << std::setw(OFFSET_WIDTH) << bytesRead + static_cast<uintmax_t>(i)
+                const int pcount = _popcount(a ^ b);
+
+                ++ret.bytes;
+                ret.bits += static_cast<uintmax_t>(pcount);
+
+                output << "0x" << std::setw(OFFSET_WIDTH) << bytesRead + static_cast<uintmax_t>(i)
                     << "\t0x" << std::setw(BYTE_WIDTH) << static_cast<unsigned int>(a)
                     << "\t0x" << std::setw(BYTE_WIDTH) << static_cast<unsigned int>(b)
                     << std::endl;
@@ -214,7 +237,7 @@ uintmax_t isaki::bitdiff::BitDiff::process(std::ostream& output)
     return ret;
 }
 
-void isaki::bitdiff::BitDiff::cleanup() noexcept
+void bd::BitDiff::cleanup() noexcept
 {
     if (m_is_a != nullptr)
     {

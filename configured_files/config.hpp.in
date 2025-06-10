@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: Apache-2.0 */
 /* Copyright 2025 isaki */
 
 #ifndef __BITDIFF_CONFIG_HPP__
@@ -5,8 +6,6 @@
 
 #include <string_view>
 
-// this is a basic example of how a CMake configured file might look
-// in this particular case, we are using it to set the version number of our executable
 namespace isaki::bitdiff::cmake
 {
     inline constexpr std::string_view project_name = "@PROJECT_NAME@";
