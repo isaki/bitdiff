@@ -196,10 +196,8 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
             if (a != b)
             {
-                const int pcount = _popcount(a ^ b);
-
                 ++ret.bytes;
-                ret.bits += static_cast<uintmax_t>(pcount);
+                ret.bits += static_cast<uintmax_t>(_popcount(a ^ b));
 
                 output << "0x" << std::setw(OFFSET_WIDTH) << bytesRead + static_cast<uintmax_t>(i)
                     << "\t0x" << std::setw(BYTE_WIDTH) << static_cast<unsigned int>(a)
