@@ -23,7 +23,7 @@ namespace
     inline constexpr size_t OFFSET_WIDTH = sizeof(uintmax_t) * (CHAR_BIT >> 2);
     inline constexpr size_t BYTE_WIDTH = sizeof(char) * (CHAR_BIT >> 2);
 
-    struct _ostream_state_cache_s
+    struct _ostream_state_cache_s final
     {
         std::ostream::iostate state;
         std::ostream::fmtflags flags;

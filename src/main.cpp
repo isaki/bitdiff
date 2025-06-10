@@ -14,6 +14,7 @@
 
 namespace po = boost::program_options;
 namespace bd = isaki::bitdiff;
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -22,9 +23,10 @@ namespace
     std::string _argv_basename(const char * name)
     {
         const std::string_view tmp(name);
-        const std::filesystem::path p(tmp);
+        const fs::path p(tmp);
         return p.filename().string();
     }
+    
 }
 
 int main(int argc, char ** argv)
@@ -60,9 +62,19 @@ int main(int argc, char ** argv)
         {
             const std::string name = _argv_basename(argv[0]);
             std::cout << name
-                << " v"
-                << isaki::bitdiff::cmake::project_version
+                << " ("
+                << bd::cmake::project_name
+                << ") v"
+                << bd::cmake::project_version
                 << std::endl;
+
+            std::cout << "Copyright (C) 2025 isaki@github" << std::endl;
+            std::cout << "License: Apache Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>" << std::endl;
+
+            std::cout << "Compiled with: "
+                << bd::cmake::cxx_compiler
+                << " v"
+                << bd::cmake::cxx_compiler_ver << std::endl;
 
             return 0;
         }
