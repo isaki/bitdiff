@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 4.0)
 
 project(
-    Bit-Diff
+    BitDiff
     VERSION 1.0.0
     LANGUAGES CXX)
 
