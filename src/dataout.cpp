@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2025 isaki */
+
 #include <iostream>
 #include <cstddef>
 #include <charconv>
