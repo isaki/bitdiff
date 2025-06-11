@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* Copyright 2025 isaki */
 
-#ifndef __BITDIFF_HPP__
-#define __BITDIFF_HPP__
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -10,6 +9,8 @@
 #include <ostream>
 #include <fstream>
 #include <filesystem>
+
+#include "bitdiff/bitdiff.hpp"
 
 namespace isaki::bitdiff
 {
@@ -26,7 +27,7 @@ namespace isaki::bitdiff
             ~BitDiff();
 
             // Returns the number of differences.
-            diff_count process(std::ostream& output, const bool printHeader);
+            diff_count process(std::ostream& output, const bool printHeader, const DataOutType type);
 
             uintmax_t getFileASize() const noexcept;
             uintmax_t getFileBSize() const noexcept;
@@ -52,5 +53,3 @@ namespace isaki::bitdiff
             std::ifstream * m_is_b;
     };
 }
-
-#endif

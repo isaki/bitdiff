@@ -10,6 +10,7 @@
 #include "boost/program_options.hpp"
 #include "bitdiff_internal/config.hpp"
 
+#include "bitdiff/dataout.hpp"
 #include "bitdiff/bitdiff.hpp"
 
 namespace po = boost::program_options;
@@ -39,6 +40,7 @@ int main(int argc, char ** argv)
             ("help,h", "print this message message")
             ("version,v", "display version information")
             ("print-header", "add a header to the output")
+            ("output-mode,m", po::value<char>(), "The operating mode")
         ;
 
         po::options_description hidden("Hidden options");
@@ -83,7 +85,41 @@ int main(int argc, char ** argv)
             const std::string name = _argv_basename(argv[0]);
             std::cout << name << " <file> <file>" << std::endl << std::endl;
             std::cout << desc << std::endl;
-            return 1;
+
+            std::cout << "Output Modes:" << std::endl;
+            std::cout << "  a : Output the byte differences in bit difference format (default)." << std::endl;
+            std::cout << "  b : Output the byte differences in binary format." << std::endl;
+            std::cout << "  x : Output the byte differences in hexidecimal format." << std::endl;
+
+            return 0;
+        }
+
+        bd::DataOutType dataType;
+        if (vm.count("output-mode"))
+        {
+            const char mode = vm["output-mode"].as<char>();
+            switch (mode)
+            {
+                case 'a':
+                    dataType = bd::DataOutType::Bits;
+                    break;
+
+                case 'b':
+                    dataType = bd::DataOutType::Binary;
+                    break;
+                
+                case 'x':
+                    dataType = bd::DataOutType::Hex;
+                    break;
+                
+                default:
+                    std::cerr << "Invalid output-mode: " << mode << std::endl;
+                    return 1;
+            }
+        }
+        else
+        {
+            dataType = bd::DataOutType::Bits;
         }
 
         if (!vm.count("fileA") || !vm.count("fileB"))
@@ -108,7 +144,7 @@ int main(int argc, char ** argv)
         std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
         std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;
 
-        const bd::diff_count dcount = diff.process(std::cout, vm.count("print-header"));
+        const bd::diff_count dcount = diff.process(std::cout, vm.count("print-header"), dataType);
 
         std::cerr << "Found " << dcount.bits << " bit difference";
         if (dcount.bits != 1)
@@ -136,5 +172,5 @@ int main(int argc, char ** argv)
     }
 
     // Differences found.
-    return 1;
+    return 11;
 }

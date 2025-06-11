@@ -12,16 +12,22 @@
 #include <string_view>
 
 #include <climits>
+#include <memory>
 
+#include "bitdiff/dataout.hpp"
 #include "bitdiff/bitdiff.hpp"
 
 namespace bd = isaki::bitdiff;
+namespace bdc = bd::do_const;
 namespace fs = std::filesystem;
 
 namespace
 {
     inline constexpr size_t OFFSET_WIDTH = sizeof(uintmax_t) * (CHAR_BIT >> 2);
     inline constexpr size_t BYTE_WIDTH = sizeof(char) * (CHAR_BIT >> 2);
+    inline constexpr char OUT_DELIM = '\t';
+
+    using DataOutFactory = std::unique_ptr<bd::DataOut> (*)(const unsigned char, const unsigned char, const char, char *);
 
     struct _ostream_state_cache_s final
     {
@@ -137,7 +143,7 @@ uintmax_t bd::BitDiff::getFileBSize() const noexcept
     return m_fsize_b;
 }
 
-bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader)
+bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader, const bd::DataOutType type)
 {
     if (!m_valid)
     {
@@ -175,6 +181,46 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
         output << "Offset\tByte in " << m_path_a << "\tByte in " << m_path_b << std::endl;
     }
 
+    // Setup for output.
+    std::unique_ptr<char[]> outputBuffer;
+    DataOutFactory factory;
+
+    switch (type)
+    {
+        case bd::DataOutType::Hex :
+            factory = [](const unsigned char a, const unsigned char b, const char delim, char * buffer)
+            {
+                auto ret = std::unique_ptr<bd::DataOut>(new bd::HexDataOut(a, b, delim, buffer));
+                return ret;
+            };
+
+            outputBuffer = std::unique_ptr<char[]>(new char[bdc::UCHAR_HEX_COUNT + 1]);
+
+            break;
+
+        case bd::DataOutType::Binary :
+            factory = [](const unsigned char a, const unsigned char b, const char delim, char * buffer)
+            {
+                auto ret = std::unique_ptr<bd::DataOut>(new bd::BinaryDataOut(a, b, delim, buffer));
+                return ret;
+            };
+
+            outputBuffer = std::unique_ptr<char[]>(new char[bdc::UCHAR_BIT_COUNT + 1]);
+
+            break;
+
+        default:
+            factory = [](const unsigned char a, const unsigned char b, const char delim, char * buffer)
+            {
+                auto ret = std::unique_ptr<bd::DataOut>(new bd::BitDataOut(a, b, delim, buffer));
+                return ret;
+            };
+
+            outputBuffer = std::unique_ptr<char[]>(new char[bdc::UCHAR_BIT_COUNT + 1]);
+
+            break;
+    }
+
     for (;;)
     {
         const size_t tmpA = _fillBuffer(m_is_a, m_buffer_a, m_bsize);
@@ -192,10 +238,10 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
                 ++ret.bytes;
                 ret.bits += static_cast<uintmax_t>(_popcount(a ^ b));
 
+                auto optr = factory(a, b, OUT_DELIM, outputBuffer.get());
+
                 output << "0x" << std::setw(OFFSET_WIDTH) << bytesRead + static_cast<uintmax_t>(i)
-                    << "\t0x" << std::setw(BYTE_WIDTH) << static_cast<unsigned int>(a)
-                    << "\t0x" << std::setw(BYTE_WIDTH) << static_cast<unsigned int>(b)
-                    << std::endl;
+                    << OUT_DELIM << *(optr.get()) << std::endl;
             }
         }
 

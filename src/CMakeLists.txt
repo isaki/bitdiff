@@ -5,6 +5,7 @@ set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
 add_executable(bitdiff
+    dataout.cpp
     bitdiff.cpp
 
     # Main should be last
