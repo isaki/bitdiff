@@ -14,7 +14,6 @@
 #include "bitdiff/dataout.hpp"
 
 namespace bd = isaki::bitdiff;
-namespace bdc = bd::do_const;
 
 namespace
 {
@@ -30,14 +29,18 @@ namespace
         for (size_t i = 0; i < bufferSize; ++i)
         {
             const size_t shift = bufferSize - i - 1;
-            
+
             if (((x >> shift) & 1) == 0)
             {
                 buffer[i] = NO_DIFF;
             }
+            else if (((value >> shift) & 1) == 0)
+            {
+                buffer[i] = '0';
+            }
             else
             {
-                buffer[i] = (((value >> shift) & 1) == 0) ? '0' : '1';
+                buffer[i] = '1';
             }
         }
     }
@@ -104,12 +107,12 @@ bd::HexDataOut::HexDataOut(const unsigned char dataA, const unsigned char dataB,
 void bd::HexDataOut::print(std::ostream& os) const
 {
     // Ensure we end up null terminated for all operations.
-    m_buffer[bdc::UCHAR_HEX_COUNT] = '\0';
+    m_buffer[UCHAR_HEX_COUNT] = '\0';
 
-    _to_chars(m_buffer, m_buffer + bdc::UCHAR_HEX_COUNT, m_a, HEX_RADIX);
+    _to_chars(m_buffer, m_buffer + UCHAR_HEX_COUNT, m_a, HEX_RADIX);
     os << HEX_PREFIX << m_buffer << m_delim;
 
-    _to_chars(m_buffer, m_buffer + bdc::UCHAR_HEX_COUNT, m_b, HEX_RADIX);
+    _to_chars(m_buffer, m_buffer + UCHAR_HEX_COUNT, m_b, HEX_RADIX);
     os << HEX_PREFIX << m_buffer;
 }
 
@@ -124,12 +127,12 @@ bd::BinaryDataOut::BinaryDataOut(const unsigned char dataA, const unsigned char 
 void bd::BinaryDataOut::print(std::ostream& os) const
 {
     // Ensure we end up null terminated for all operations.
-    m_buffer[bdc::UCHAR_BIT_COUNT] = '\0';
+    m_buffer[UCHAR_BIT_COUNT] = '\0';
 
-    _to_chars(m_buffer, m_buffer + bdc::UCHAR_BIT_COUNT, m_a, BIN_RADIX);
+    _to_chars(m_buffer, m_buffer + UCHAR_BIT_COUNT, m_a, BIN_RADIX);
     os << BIN_PREFIX << m_buffer << m_delim;
 
-    _to_chars(m_buffer, m_buffer + bdc::UCHAR_BIT_COUNT, m_b, BIN_RADIX);
+    _to_chars(m_buffer, m_buffer + UCHAR_BIT_COUNT, m_b, BIN_RADIX);
     os << BIN_PREFIX << m_buffer;
 }
 
@@ -144,13 +147,13 @@ bd::BitDataOut::BitDataOut(const unsigned char dataA, const unsigned char dataB,
 void bd::BitDataOut::print(std::ostream& os) const
 {
     // Ensure we end up null terminated for all operations.
-    m_buffer[bdc::UCHAR_BIT_COUNT] = '\0';
+    m_buffer[UCHAR_BIT_COUNT] = '\0';
 
     const unsigned char x = m_a ^ m_b;
 
-    _to_bitwise_string(m_a, x, m_buffer, bdc::UCHAR_BIT_COUNT);
+    _to_bitwise_string(m_a, x, m_buffer, UCHAR_BIT_COUNT);
     os << BIN_PREFIX << m_buffer << m_delim;
 
-    _to_bitwise_string(m_b, x, m_buffer, bdc::UCHAR_BIT_COUNT);
+    _to_bitwise_string(m_b, x, m_buffer, UCHAR_BIT_COUNT);
     os << BIN_PREFIX << m_buffer;
 }

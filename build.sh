@@ -4,6 +4,12 @@
 
 BUILD_DIR="./build"
 
+cmake_cmd=$(which cmake 2> /dev/null)
+if [ $? -ne 0 ]; then
+    echo "Unable to locate cmake"
+    exit 1
+fi
+
 build_cmd=$(which ninja 2> /dev/null)
 
 if [ $? -eq 0 ]; then
@@ -23,8 +29,7 @@ if [ -d "${BUILD_DIR}" ]; then
 fi
 
 mkdir "${BUILD_DIR}" || exit $?
-cd "${BUILD_DIR}" || exit $?
 
-cmake "${extra_opts[@]}" .. || exit $?
-exec "${build_cmd}"
+"${cmake_cmd}" "${extra_opts[@]}" -S . -B "${BUILD_DIR}" || exit $?
+"${cmake_cmd}" --build "${BUILD_DIR}"
 exit $?

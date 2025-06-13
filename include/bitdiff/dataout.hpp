@@ -9,11 +9,8 @@
 
 namespace isaki::bitdiff
 {
-    namespace do_const
-    {
-        inline constexpr size_t UCHAR_HEX_COUNT = sizeof(unsigned char) * (CHAR_BIT >> 2);
-        inline constexpr size_t UCHAR_BIT_COUNT = sizeof(unsigned char) * CHAR_BIT;
-    }
+    inline constexpr size_t UCHAR_HEX_COUNT = sizeof(unsigned char) * (CHAR_BIT >> 2);
+    inline constexpr size_t UCHAR_BIT_COUNT = sizeof(unsigned char) * CHAR_BIT;
 
     enum class DataOutType
     {
@@ -50,10 +47,10 @@ namespace isaki::bitdiff
 
             // buffer must be at least do_const::UCHAR_HEX_COUNT + 1.
             HexDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
-        
+
         protected:
             virtual void print(std::ostream& os) const;
-        
+
         private:
             HexDataOut() = delete;
             HexDataOut(const HexDataOut&) = delete;
@@ -69,10 +66,10 @@ namespace isaki::bitdiff
 
             // buffer must be at least do_const::UCHAR_BIT_COUNT + 1.
             BinaryDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
-        
+
         protected:
             virtual void print(std::ostream& os) const;
-        
+
         private:
             BinaryDataOut() = delete;
             BinaryDataOut(const BinaryDataOut&) = delete;
@@ -91,7 +88,7 @@ namespace isaki::bitdiff
 
         protected:
             virtual void print(std::ostream& os) const;
-        
+
         private:
             BitDataOut() = delete;
             BitDataOut(const BitDataOut&) = delete;
@@ -99,6 +96,6 @@ namespace isaki::bitdiff
 
             using super = DataOut;
     };
- 
+
     std::ostream& operator<<(std::ostream& os, const DataOut& obj);
 }

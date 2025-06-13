@@ -1,7 +1,7 @@
 # Copyright 2025 isaki
 
 file(REAL_PATH "${CMAKE_CXX_COMPILER}" REAL_CXX_COMPILER)
-cmake_path(GET REAL_CXX_COMPILER FILENAME REAL_CXX_COMPILER_NAME) 
+cmake_path(GET REAL_CXX_COMPILER FILENAME REAL_CXX_COMPILER_NAME)
 
 configure_file(
     "config.hpp.in"

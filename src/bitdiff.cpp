@@ -18,7 +18,6 @@
 #include "bitdiff/bitdiff.hpp"
 
 namespace bd = isaki::bitdiff;
-namespace bdc = bd::do_const;
 namespace fs = std::filesystem;
 
 namespace
@@ -50,7 +49,7 @@ namespace
 #if defined(__GNUC__)
         return __builtin_popcount(c);
 #else
-        #error "GNU Extensions not supported"
+#error "GNU Extensions not supported"
 #endif
     }
 
@@ -72,7 +71,7 @@ namespace
             err.append(path.string());
             throw std::runtime_error(err);
         }
-        
+
         s->exceptions(std::ifstream::badbit);
     }
 
@@ -172,7 +171,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
             << std::endl;
     }
 
-    // First, we need to read from each buffer.    
+    // First, we need to read from each buffer.
     uintmax_t bytesRead = 0;
     bd::diff_count ret = { .bytes = 0, .bits = 0 };
 
@@ -194,7 +193,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
                 return ret;
             };
 
-            outputBuffer = std::unique_ptr<char[]>(new char[bdc::UCHAR_HEX_COUNT + 1]);
+            outputBuffer = std::unique_ptr<char[]>(new char[UCHAR_HEX_COUNT + 1]);
 
             break;
 
@@ -205,7 +204,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
                 return ret;
             };
 
-            outputBuffer = std::unique_ptr<char[]>(new char[bdc::UCHAR_BIT_COUNT + 1]);
+            outputBuffer = std::unique_ptr<char[]>(new char[UCHAR_BIT_COUNT + 1]);
 
             break;
 
@@ -216,7 +215,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
                 return ret;
             };
 
-            outputBuffer = std::unique_ptr<char[]>(new char[bdc::UCHAR_BIT_COUNT + 1]);
+            outputBuffer = std::unique_ptr<char[]>(new char[UCHAR_BIT_COUNT + 1]);
 
             break;
     }
@@ -305,7 +304,7 @@ void bd::BitDiff::cleanup() noexcept
         delete m_is_b;
         m_is_b = nullptr;
     }
-    
+
     if (m_buffer_a != nullptr)
     {
         delete[] m_buffer_a;
@@ -317,6 +316,6 @@ void bd::BitDiff::cleanup() noexcept
         delete[] m_buffer_b;
         m_buffer_b = nullptr;
     }
-    
+
     m_valid = false;
 }

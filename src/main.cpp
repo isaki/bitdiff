@@ -5,13 +5,13 @@
 #include <filesystem>
 #include <string>
 #include <string_view>
-#include <cstdint>
+#include <cstddef>
 
 #include "boost/program_options.hpp"
-#include "bitdiff_internal/config.hpp"
 
 #include "bitdiff/dataout.hpp"
 #include "bitdiff/bitdiff.hpp"
+#include "bitdiff/version.hpp"
 
 namespace po = boost::program_options;
 namespace bd = isaki::bitdiff;
@@ -19,7 +19,8 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    inline constexpr size_t BUFFER_SIZE = 4 * 1024 * 128;
+    // Default to a 64k buffer
+    inline constexpr size_t READ_BUFFER_LENGTH = 64 * 1024;
 
     std::string _argv_basename(const char * name)
     {
@@ -27,11 +28,21 @@ namespace
         const fs::path p(tmp);
         return p.filename().string();
     }
-    
+
+    void _print_help(std::ostream& os, const std::string_view name, const po::options_description& desc)
+    {
+        os << name << " <fileA> <fileB>" << std::endl << std::endl;
+        os << desc << std::endl;
+
+        os << "Output Modes:" << std::endl;
+        os << "  a : Output the byte differences in bit difference format (default)." << std::endl;
+        os << "  b : Output the byte differences in binary format." << std::endl;
+        os << "  x : Output the byte differences in hexidecimal format." << std::endl;
+    }
 }
 
 int main(int argc, char ** argv)
-{ 
+{
     try
     {
         // Declare the supported options.
@@ -63,34 +74,13 @@ int main(int argc, char ** argv)
         if (vm.count("version"))
         {
             const std::string name = _argv_basename(argv[0]);
-            std::cout << name
-                << " ("
-                << bd::cmake::project_name
-                << ") v"
-                << bd::cmake::project_version
-                << std::endl;
-
-            std::cout << "Copyright (C) 2025 isaki@github" << std::endl;
-            std::cout << "License: Apache Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>" << std::endl;
-
-            std::cout << "Compiled with: "
-                << bd::cmake::cxx_compiler
-                << " v"
-                << bd::cmake::cxx_compiler_ver << std::endl;
-
+            bd::print_version(std::cout, name);
             return 0;
         }
 
         if (vm.count("help")) {
             const std::string name = _argv_basename(argv[0]);
-            std::cout << name << " <file> <file>" << std::endl << std::endl;
-            std::cout << desc << std::endl;
-
-            std::cout << "Output Modes:" << std::endl;
-            std::cout << "  a : Output the byte differences in bit difference format (default)." << std::endl;
-            std::cout << "  b : Output the byte differences in binary format." << std::endl;
-            std::cout << "  x : Output the byte differences in hexidecimal format." << std::endl;
-
+            _print_help(std::cout, name, desc);
             return 0;
         }
 
@@ -107,11 +97,11 @@ int main(int argc, char ** argv)
                 case 'b':
                     dataType = bd::DataOutType::Binary;
                     break;
-                
+
                 case 'x':
                     dataType = bd::DataOutType::Hex;
                     break;
-                
+
                 default:
                     std::cerr << "Invalid output-mode: " << mode << std::endl;
                     return 1;
@@ -139,7 +129,7 @@ int main(int argc, char ** argv)
 
         std::cerr << "Initializing diff object" << std::endl;
 
-        bd::BitDiff diff(fileA, fileB, BUFFER_SIZE);
+        bd::BitDiff diff(fileA, fileB, READ_BUFFER_LENGTH);
 
         std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
         std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;

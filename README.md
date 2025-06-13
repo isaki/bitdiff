@@ -16,7 +16,7 @@ The `bitdiff` application will be located in `<checkout location>/build/bin`.
 # Usage
 ```
 $ bitdiff --help
-bitdiff <file> <file>
+bitdiff <fileA> <fileB>
 
 Options:
   -h [ --help ]            print this message message

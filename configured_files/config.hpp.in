@@ -14,4 +14,7 @@ namespace isaki::bitdiff::cmake
     // Compiler Info
     inline constexpr std::string_view cxx_compiler = "@REAL_CXX_COMPILER_NAME@";
     inline constexpr std::string_view cxx_compiler_ver = "@CMAKE_CXX_COMPILER_VERSION@";
+
+    // Other Data
+    inline constexpr std::string_view project_url = "@CMAKE_PROJECT_HOMEPAGE_URL@";
 }

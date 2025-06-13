@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2025 isaki
 
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 4.0.2)
 
 project(
     BitDiff
-    VERSION 1.1.0
-    LANGUAGES CXX)
+    VERSION 1.1.1
+    LANGUAGES CXX
+    HOMEPAGE_URL "https://github.com/isaki/bitdiff")
 
 # Configure C++20
 set(CMAKE_CXX_STANDARD 20)
