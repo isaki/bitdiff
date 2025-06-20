@@ -14,8 +14,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
+# Global Compiler CMake Configuration
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Compiler flags
-add_compile_options(-O2 -pipe -Wall -Wextra -Wpedantic -Werror -Wtrampolines -Wimplicit-fallthrough -Wformat -fPIE -pie)
+add_compile_options(-O2 -pipe -Wall -Wextra -Wpedantic -Werror -Wimplicit-fallthrough -Wformat)
+
+# Compiler Specific Flags
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(-Wtrampolines)
+endif()
 
 # Configure CMAKE
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

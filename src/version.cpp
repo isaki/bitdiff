@@ -28,7 +28,12 @@ void bd::print_version(std::ostream& os, const std::string_view name)
     os << "Compiled with: "
         << bd::cmake::cxx_compiler
         << " v"
-        << bd::cmake::cxx_compiler_ver << std::endl;
+        << bd::cmake::cxx_compiler_ver
+        << " for "
+        << bd::cmake::build_platform
+        << ' '
+        << bd::cmake::build_architecture
+        << std::endl;
 
     os << "Written by isaki@github" << std::endl;
 }

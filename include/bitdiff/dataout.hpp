@@ -5,12 +5,14 @@
 
 #include <iostream>
 #include <cstddef>
+#include <cstdint>
 #include <climits>
 
 namespace isaki::bitdiff
 {
     inline constexpr size_t UCHAR_HEX_COUNT = sizeof(unsigned char) * (CHAR_BIT >> 2);
     inline constexpr size_t UCHAR_BIT_COUNT = sizeof(unsigned char) * CHAR_BIT;
+    inline constexpr size_t UINTMAX_HEX_COUNT = sizeof(uintmax_t) * (CHAR_BIT >> 2);
 
     enum class DataOutType
     {

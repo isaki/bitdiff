@@ -22,8 +22,6 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    inline constexpr size_t OFFSET_WIDTH = sizeof(uintmax_t) * (CHAR_BIT >> 2);
-    inline constexpr size_t BYTE_WIDTH = sizeof(char) * (CHAR_BIT >> 2);
     inline constexpr char OUT_DELIM = '\t';
 
     using DataOutFactory = std::unique_ptr<bd::DataOut> (*)(const unsigned char, const unsigned char, const char, char *);
@@ -239,7 +237,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
                 auto optr = factory(a, b, OUT_DELIM, outputBuffer.get());
 
-                output << "0x" << std::setw(OFFSET_WIDTH) << bytesRead + static_cast<uintmax_t>(i)
+                output << "0x" << std::setw(bd::UINTMAX_HEX_COUNT) << bytesRead + static_cast<uintmax_t>(i)
                     << OUT_DELIM << *(optr.get()) << std::endl;
             }
         }
