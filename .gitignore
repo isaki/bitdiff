@@ -46,3 +46,7 @@
 
 # Ide files
 /.vscode
+/.vs
+
+# CMake files
+CMakeUserPresets.json
