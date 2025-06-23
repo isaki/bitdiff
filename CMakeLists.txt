@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2025 isaki
 
-cmake_minimum_required(VERSION 4.0.2)
+cmake_minimum_required(VERSION 4.0.3)
 
 project(
     BitDiff
-    VERSION 1.1.1
+    VERSION 1.2.0
     LANGUAGES CXX
     HOMEPAGE_URL "https://github.com/isaki/bitdiff")
 
@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
 # Global Compiler CMake Configuration
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE On)
 
 # Compiler flags
 add_compile_options(-O2 -pipe -Wall -Wextra -Wpedantic -Werror -Wimplicit-fallthrough -Wformat)

@@ -25,6 +25,8 @@ namespace isaki::bitdiff
         public:
             virtual ~DataOut();
 
+            virtual int getDiffPopCount() const;
+
             friend std::ostream& operator<<(std::ostream& os, const DataOut& obj);
 
         protected:
@@ -51,7 +53,7 @@ namespace isaki::bitdiff
             HexDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
 
         protected:
-            virtual void print(std::ostream& os) const;
+            void print(std::ostream& os) const override;
 
         private:
             HexDataOut() = delete;
@@ -70,7 +72,7 @@ namespace isaki::bitdiff
             BinaryDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
 
         protected:
-            virtual void print(std::ostream& os) const;
+            void print(std::ostream& os) const override;
 
         private:
             BinaryDataOut() = delete;
@@ -88,8 +90,10 @@ namespace isaki::bitdiff
             // buffer must be at least do_const::UCHAR_BIT_COUNT + 1.
             BitDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
 
+            int getDiffPopCount() const override;
+
         protected:
-            virtual void print(std::ostream& os) const;
+            void print(std::ostream& os) const override;
 
         private:
             BitDataOut() = delete;
@@ -97,6 +101,8 @@ namespace isaki::bitdiff
             BitDataOut & operator=(const BitDataOut&) = delete;
 
             using super = DataOut;
+
+            const unsigned char m_xor;
     };
 
     std::ostream& operator<<(std::ostream& os, const DataOut& obj);

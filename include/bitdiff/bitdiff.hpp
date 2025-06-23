@@ -7,9 +7,9 @@
 #include <cstdint>
 #include <string_view>
 #include <ostream>
-#include <fstream>
 #include <filesystem>
 
+#include "bitdiff/reader.hpp"
 #include "bitdiff/bitdiff.hpp"
 
 namespace isaki::bitdiff
@@ -49,7 +49,8 @@ namespace isaki::bitdiff
 
             unsigned char * m_buffer_a;
             unsigned char * m_buffer_b;
-            std::ifstream * m_is_a;
-            std::ifstream * m_is_b;
+
+            isaki::bitdiff::Reader * m_reader_a;
+            isaki::bitdiff::Reader * m_reader_b;
     };
 }

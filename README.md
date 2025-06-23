@@ -21,11 +21,10 @@ bitdiff <fileA> <fileB>
 Options:
   -h [ --help ]            print this message message
   -v [ --version ]         display version information
-  --print-header           add a header to the output
+  -p [ --print-header ]    add a header to the output
   -m [ --output-mode ] arg The operating mode
 
 Output Modes:
   a : Output the byte differences in bit difference format (default).
   b : Output the byte differences in binary format.
   x : Output the byte differences in hexidecimal format.
-```

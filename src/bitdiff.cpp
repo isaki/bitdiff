@@ -1,19 +1,19 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* Copyright 2025 isaki */
 
-#include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <algorithm>
 
 #include <cstdint>
 #include <cstddef>
-#include <fstream>
 #include <filesystem>
 #include <string_view>
 
 #include <climits>
 #include <memory>
 
+#include "bitdiff/reader.hpp"
 #include "bitdiff/dataout.hpp"
 #include "bitdiff/bitdiff.hpp"
 
@@ -41,52 +41,6 @@ namespace
             }
         }
     };
-
-    // This function is specific to GCC/Clang compilers
-    inline int _popcount(unsigned char c) {
-#if defined(__GNUC__)
-        return __builtin_popcount(c);
-#else
-#error "GNU Extensions not supported"
-#endif
-    }
-
-    inline void _closeStream(std::ifstream * s)
-    {
-        if (s->is_open())
-        {
-            s->close();
-        }
-    }
-
-    void _openStream(std::ifstream * s, const fs::path& path)
-    {
-        s->open(path, std::ios_base::binary | std::ios_base::in);
-        if (!s->is_open())
-        {
-            std::string err;
-            err.append("Unable to open ");
-            err.append(path.string());
-            throw std::runtime_error(err);
-        }
-
-        s->exceptions(std::ifstream::badbit);
-    }
-
-    size_t _fillBuffer(std::ifstream * in, unsigned char * buffer, const size_t len)
-    {
-        size_t read = 0;
-
-        char * sbuff = reinterpret_cast<char *>(buffer);
-
-        while (read < len && !in->eof())
-        {
-            in->read(sbuff, len - read);
-            read += in->gcount();
-        }
-
-        return read;
-    }
 }
 
 bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const size_t bufferSize) :
@@ -94,8 +48,8 @@ bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const
     m_valid(true),
     m_buffer_a(nullptr),
     m_buffer_b(nullptr),
-    m_is_a(nullptr),
-    m_is_b(nullptr)
+    m_reader_a(nullptr),
+    m_reader_b(nullptr)
 {
     // Temp values
     try
@@ -106,11 +60,9 @@ bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const
         m_fsize_a = fs::file_size(m_path_a);
         m_fsize_b = fs::file_size(m_path_b);
 
-        m_is_a = new std::ifstream();
-        _openStream(m_is_a, m_path_a);
+        m_reader_a = new Reader(m_path_a, bufferSize);
 
-        m_is_b = new std::ifstream();
-        _openStream(m_is_b, m_path_b);
+        m_reader_b = new Reader(m_path_b, bufferSize);
 
         m_buffer_a = new unsigned char[bufferSize]();
         m_buffer_b = new unsigned char[bufferSize]();
@@ -220,8 +172,8 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
     for (;;)
     {
-        const size_t tmpA = _fillBuffer(m_is_a, m_buffer_a, m_bsize);
-        const size_t tmpB = _fillBuffer(m_is_b, m_buffer_b, m_bsize);
+        const size_t tmpA = m_reader_a->read(m_buffer_a);
+        const size_t tmpB = m_reader_b->read(m_buffer_b);
 
         const size_t tmpX = std::min(tmpA, tmpB);
 
@@ -232,11 +184,13 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
             if (a != b)
             {
-                ++ret.bytes;
-                ret.bits += static_cast<uintmax_t>(_popcount(a ^ b));
-
                 auto optr = factory(a, b, OUT_DELIM, outputBuffer.get());
 
+                // Counters
+                ++ret.bytes;
+                ret.bits += static_cast<uintmax_t>(optr->getDiffPopCount());
+
+                // Output
                 output << "0x" << std::setw(bd::UINTMAX_HEX_COUNT) << bytesRead + static_cast<uintmax_t>(i)
                     << OUT_DELIM << *(optr.get()) << std::endl;
             }
@@ -244,7 +198,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
         bytesRead += static_cast<uintmax_t>(tmpX);
 
-        if (m_is_a->eof() || m_is_b->eof())
+        if (m_reader_a->eof() || m_reader_b->eof())
         {
             std::cerr << "End of one or both files reached" << std::endl;
             break;
@@ -273,34 +227,16 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
 void bd::BitDiff::cleanup() noexcept
 {
-    if (m_is_a != nullptr)
+    if (m_reader_a != nullptr)
     {
-        try
-        {
-            _closeStream(m_is_a);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Failed to close stream A: " << e.what() << std::endl;
-        }
-
-        delete m_is_a;
-        m_is_a = nullptr;
+        delete m_reader_a;
+        m_reader_a = nullptr;
     }
 
-    if (m_is_b != nullptr)
+    if (m_reader_b != nullptr)
     {
-        try
-        {
-            _closeStream(m_is_b);
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Failed to close stream B: " << e.what() << std::endl;
-        }
-
-        delete m_is_b;
-        m_is_b = nullptr;
+        delete m_reader_b;
+        m_reader_b = nullptr;
     }
 
     if (m_buffer_a != nullptr)

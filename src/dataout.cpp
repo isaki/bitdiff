@@ -72,6 +72,15 @@ namespace
             memset(start, '0', offset);
         }
     }
+
+    // This function is specific to GCC/Clang compilers
+    inline int _popcount(unsigned char c) {
+#if defined(__GNUC__)
+        return __builtin_popcount(c);
+#else
+#error "GNU Extensions not supported"
+#endif
+    }
 }
 
 //
@@ -96,13 +105,19 @@ bd::DataOut::DataOut(const unsigned char dataA, const unsigned char dataB, const
     m_delim(delim),
     m_buffer(buffer) {}
 
+int bd::DataOut::getDiffPopCount() const
+{
+    return _popcount(m_a ^ m_b);
+}
+
 //
 // HEX
 //
 
 bd::HexDataOut::~HexDataOut() {}
 
-bd::HexDataOut::HexDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) : super(dataA, dataB, delim, buffer) {}
+bd::HexDataOut::HexDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
+    super(dataA, dataB, delim, buffer) {}
 
 void bd::HexDataOut::print(std::ostream& os) const
 {
@@ -122,7 +137,8 @@ void bd::HexDataOut::print(std::ostream& os) const
 
 bd::BinaryDataOut::~BinaryDataOut() {}
 
-bd::BinaryDataOut::BinaryDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) : super(dataA, dataB, delim, buffer) {}
+bd::BinaryDataOut::BinaryDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
+    super(dataA, dataB, delim, buffer) {}
 
 void bd::BinaryDataOut::print(std::ostream& os) const
 {
@@ -142,18 +158,23 @@ void bd::BinaryDataOut::print(std::ostream& os) const
 
 bd::BitDataOut::~BitDataOut() {}
 
-bd::BitDataOut::BitDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) : super(dataA, dataB, delim, buffer) {}
+bd::BitDataOut::BitDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
+    super(dataA, dataB, delim, buffer),
+    m_xor(dataA ^ dataB) {}
+
+int bd::BitDataOut::getDiffPopCount() const
+{
+    return _popcount(m_xor);
+}
 
 void bd::BitDataOut::print(std::ostream& os) const
 {
     // Ensure we end up null terminated for all operations.
     m_buffer[UCHAR_BIT_COUNT] = '\0';
 
-    const unsigned char x = m_a ^ m_b;
-
-    _to_bitwise_string(m_a, x, m_buffer, UCHAR_BIT_COUNT);
+    _to_bitwise_string(m_a, m_xor, m_buffer, UCHAR_BIT_COUNT);
     os << BIN_PREFIX << m_buffer << m_delim;
 
-    _to_bitwise_string(m_b, x, m_buffer, UCHAR_BIT_COUNT);
+    _to_bitwise_string(m_b, m_xor, m_buffer, UCHAR_BIT_COUNT);
     os << BIN_PREFIX << m_buffer;
 }

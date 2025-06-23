@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
         desc.add_options()
             ("help,h", "print this message message")
             ("version,v", "display version information")
-            ("print-header", "add a header to the output")
+            ("print-header,p", "add a header to the output")
             ("output-mode,m", po::value<char>(), "The operating mode")
         ;
 
