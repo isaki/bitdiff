@@ -39,7 +39,6 @@ namespace isaki::bitdiff
 
             void cleanup() noexcept;
 
-            const size_t m_bsize;
             uintmax_t m_fsize_a;
             uintmax_t m_fsize_b;
             bool m_valid;

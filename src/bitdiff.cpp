@@ -44,7 +44,6 @@ namespace
 }
 
 bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const size_t bufferSize) :
-    m_bsize(bufferSize),
     m_valid(true),
     m_buffer_a(nullptr),
     m_buffer_b(nullptr),
