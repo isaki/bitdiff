@@ -42,15 +42,41 @@ namespace
 
 bd::Reader::~Reader()
 {
-    // Shared resources need to be protected.
-    std::unique_lock<std::mutex> lock(m_mtx);
+    // Create the lock, but unlocked
+    std::unique_lock<std::mutex> lock(m_mtx, std::defer_lock);
+
+    // Set the atomic boolean before taking the lock.
+    m_stop = true;
+
+    // Lock for safe data access.
+    lock.lock();
+    if (m_thread != nullptr)
+    {
+        m_bufferFree.notify_all();
+        m_bufferFull.notify_all();
+
+        // We need this released so threads can cleanup.
+        lock.unlock();
+
+        m_thread->join();
+
+        // We can now restore the lock state.
+        lock.lock();
+        delete m_thread;
+        m_thread = nullptr;
+    }
+
     cleanup();
+
+    // Lock releases when going out of scope.
 }
 
 bd::Reader::Reader(const fs::path& file, const size_t bufferSize) :
     m_bsize(bufferSize),
     m_read(0),
     m_eof(false),
+    m_stop(false),
+    m_thread(nullptr),
     m_is(nullptr),
     m_buffer(nullptr)
 {
@@ -72,13 +98,14 @@ bd::Reader::Reader(const fs::path& file, const size_t bufferSize) :
         // We don't need to zero memory here.
         m_buffer = new unsigned char[bufferSize];
 
-        m_jthread = std::jthread(&bd::Reader::run, this);
+        // This must be the last call before the end of the try block.
+        m_thread = new std::thread(&bd::Reader::run, this);
     }
     catch (const std::exception& e)
     {
         std::cerr << "Reader initialization failure: " << e.what() << std::endl;
 
-        // Cleanup will clear valid flag. We don't need lock. If jthread threw,
+        // Cleanup will clear valid flag. We don't need lock. If thread threw,
         // we have no thread anyway.
         cleanup();
         throw e;
@@ -89,7 +116,12 @@ size_t bd::Reader::read(unsigned char * buffer)
 {
     // This is effectively a consumer.
     std::unique_lock<std::mutex> lock(m_mtx);
-    m_bufferFull.wait(lock, [this] { return this->m_read > 0 || this->m_eof; });
+    m_bufferFull.wait(lock, [this] { return this->m_read > 0 || this->m_eof || this->m_stop.load(); });
+
+    if (m_stop.load())
+    {
+        throw std::runtime_error("Unexpected reader thread termination");
+    }
 
     size_t ret = 0;
     if (m_read > 0)
@@ -99,7 +131,7 @@ size_t bd::Reader::read(unsigned char * buffer)
         m_read = 0;
     }
 
-    m_bufferFree.notify_one();
+    m_bufferFree.notify_all();
 
     return ret;
 }
@@ -112,16 +144,21 @@ bool bd::Reader::eof() noexcept
 
 void bd::Reader::run()
 {
-    for (;;)
+    while (! m_stop.load())
     {
         // This is the producer and the thread.
         std::unique_lock<std::mutex> lock(m_mtx);
-        m_bufferFree.wait(lock, [this] { return this->m_read == 0; });
+        m_bufferFree.wait(lock, [this] { return this->m_read == 0 || this->m_stop.load(); });
+
+        if (m_stop.load())
+        {
+            break;
+        }
 
         struct _read_summary_s summary = _fillBuffer(m_is, m_buffer, m_bsize);
         m_read = summary.bytesRead;
 
-        m_bufferFull.notify_one();
+        m_bufferFull.notify_all();
 
         if (summary.eof)
         {

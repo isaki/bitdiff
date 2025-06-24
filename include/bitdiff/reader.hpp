@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include <thread>
 #include <cstdint>
+#include <atomic>
 
 namespace isaki::bitdiff
 {
@@ -47,7 +48,8 @@ namespace isaki::bitdiff
             bool m_eof;
 
             // The thread.
-            std::jthread m_jthread;
+            std::atomic_bool m_stop;
+            std::thread * m_thread;
 
             // The stream
             std::ifstream * m_is;
