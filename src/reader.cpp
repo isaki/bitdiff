@@ -21,15 +21,15 @@ namespace
 {
     struct _read_summary_s final
     {
-        size_t bytesRead;
+        std::streamsize bytesRead;
         bool eof;
     };
 
-    struct _read_summary_s _fillBuffer(std::ifstream * in, unsigned char * buffer, const size_t len)
+    struct _read_summary_s _fillBuffer(std::ifstream * in, unsigned char * buffer, const std::streamsize len)
     {
         char * sbuff = reinterpret_cast<char *>(buffer);
 
-        size_t read = 0;
+        std::streamsize read = 0;
         while (read < len && !in->eof())
         {
             in->read(sbuff, len - read);
@@ -123,7 +123,7 @@ size_t bd::Reader::read(unsigned char * buffer)
         throw std::runtime_error("Unexpected reader thread termination");
     }
 
-    size_t ret = 0;
+    std::streamsize ret = 0;
     if (m_read > 0)
     {
         memcpy(buffer, m_buffer, m_read);
@@ -133,7 +133,7 @@ size_t bd::Reader::read(unsigned char * buffer)
 
     m_bufferFree.notify_all();
 
-    return ret;
+    return static_cast<size_t>(ret);
 }
 
 bool bd::Reader::eof() noexcept
@@ -155,7 +155,7 @@ void bd::Reader::run()
             break;
         }
 
-        struct _read_summary_s summary = _fillBuffer(m_is, m_buffer, m_bsize);
+        struct _read_summary_s summary = _fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
         m_read = summary.bytesRead;
 
         m_bufferFull.notify_all();

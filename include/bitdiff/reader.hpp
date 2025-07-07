@@ -44,7 +44,7 @@ namespace isaki::bitdiff
             std::mutex m_mtx;
             std::condition_variable m_bufferFull;
             std::condition_variable m_bufferFree;
-            size_t m_read;
+            std::streamsize m_read;
             bool m_eof;
 
             // The thread.
