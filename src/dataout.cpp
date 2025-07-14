@@ -97,17 +97,32 @@ std::ostream& bd::operator<<(std::ostream& os, const bd::DataOut& obj)
 // BASE CLASS
 //
 
-bd::DataOut::~DataOut() {}
+bd::DataOut::~DataOut()
+{
+    if (m_buffer != nullptr)
+    {
+        delete[] m_buffer;
+    }
+}
 
-bd::DataOut::DataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
-    m_a(dataA),
-    m_b(dataB),
+bd::DataOut::DataOut(const char delim, const size_t bufferSize) :
     m_delim(delim),
-    m_buffer(buffer) {}
+    m_a(0),
+    m_b(0),
+    m_buffer(nullptr)
+{
+    m_buffer = new char[bufferSize];
+}
 
 int bd::DataOut::getDiffPopCount() const
 {
     return _popcount(m_a ^ m_b);
+}
+
+void bd::DataOut::init(const unsigned char dataA, const unsigned char dataB) noexcept
+{
+    m_a = dataA;
+    m_b = dataB;
 }
 
 //
@@ -116,8 +131,8 @@ int bd::DataOut::getDiffPopCount() const
 
 bd::HexDataOut::~HexDataOut() {}
 
-bd::HexDataOut::HexDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
-    super(dataA, dataB, delim, buffer) {}
+bd::HexDataOut::HexDataOut(const char delim) :
+    super(delim, bd::UCHAR_HEX_COUNT + 1) {}
 
 void bd::HexDataOut::print(std::ostream& os) const
 {
@@ -137,8 +152,8 @@ void bd::HexDataOut::print(std::ostream& os) const
 
 bd::BinaryDataOut::~BinaryDataOut() {}
 
-bd::BinaryDataOut::BinaryDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
-    super(dataA, dataB, delim, buffer) {}
+bd::BinaryDataOut::BinaryDataOut(const char delim) :
+    super(delim, bd::UCHAR_BIT_COUNT + 1) {}
 
 void bd::BinaryDataOut::print(std::ostream& os) const
 {
@@ -158,13 +173,19 @@ void bd::BinaryDataOut::print(std::ostream& os) const
 
 bd::BitDataOut::~BitDataOut() {}
 
-bd::BitDataOut::BitDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer) :
-    super(dataA, dataB, delim, buffer),
-    m_xor(dataA ^ dataB) {}
+bd::BitDataOut::BitDataOut(const char delim) :
+    super(delim, bd::UCHAR_BIT_COUNT + 1),
+    m_xor(0) {}
 
 int bd::BitDataOut::getDiffPopCount() const
 {
     return _popcount(m_xor);
+}
+
+void bd::BitDataOut::init(const unsigned char dataA, const unsigned char dataB) noexcept
+{
+    super::init(dataA, dataB);
+    m_xor = dataA ^ dataB;
 }
 
 void bd::BitDataOut::print(std::ostream& os) const

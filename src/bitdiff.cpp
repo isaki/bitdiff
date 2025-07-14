@@ -24,8 +24,6 @@ namespace
 {
     inline constexpr char OUT_DELIM = '\t';
 
-    using DataOutFactory = std::unique_ptr<bd::DataOut> (*)(const unsigned char, const unsigned char, const char, char *);
-
     struct _ostream_state_cache_s final
     {
         std::ostream::iostate state;
@@ -130,42 +128,19 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
     }
 
     // Setup for output.
-    std::unique_ptr<char[]> outputBuffer;
-    DataOutFactory factory;
-
+    std::unique_ptr<bd::DataOut> optr;
     switch (type)
     {
         case bd::DataOutType::Hex :
-            factory = [](const unsigned char a, const unsigned char b, const char delim, char * buffer)
-            {
-                auto ret = std::unique_ptr<bd::DataOut>(new bd::HexDataOut(a, b, delim, buffer));
-                return ret;
-            };
-
-            outputBuffer = std::unique_ptr<char[]>(new char[UCHAR_HEX_COUNT + 1]);
-
+            optr = std::make_unique<bd::HexDataOut>(OUT_DELIM);
             break;
 
         case bd::DataOutType::Binary :
-            factory = [](const unsigned char a, const unsigned char b, const char delim, char * buffer)
-            {
-                auto ret = std::unique_ptr<bd::DataOut>(new bd::BinaryDataOut(a, b, delim, buffer));
-                return ret;
-            };
-
-            outputBuffer = std::unique_ptr<char[]>(new char[UCHAR_BIT_COUNT + 1]);
-
+            optr = std::make_unique<bd::BinaryDataOut>(OUT_DELIM);
             break;
 
         default:
-            factory = [](const unsigned char a, const unsigned char b, const char delim, char * buffer)
-            {
-                auto ret = std::unique_ptr<bd::DataOut>(new bd::BitDataOut(a, b, delim, buffer));
-                return ret;
-            };
-
-            outputBuffer = std::unique_ptr<char[]>(new char[UCHAR_BIT_COUNT + 1]);
-
+            optr = std::make_unique<bd::BitDataOut>(OUT_DELIM);
             break;
     }
 
@@ -183,7 +158,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
             if (a != b)
             {
-                auto optr = factory(a, b, OUT_DELIM, outputBuffer.get());
+                optr->init(a, b);
 
                 // Counters
                 ++ret.bytes;

@@ -27,16 +27,18 @@ namespace isaki::bitdiff
 
             virtual int getDiffPopCount() const;
 
+            virtual void init(const unsigned char dataA, const unsigned char dataB) noexcept;
+
             friend std::ostream& operator<<(std::ostream& os, const DataOut& obj);
 
         protected:
-            DataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
+            DataOut(const char delim, const size_t bufferSize);
 
             virtual void print(std::ostream& os) const = 0;
 
-            const unsigned char m_a;
-            const unsigned char m_b;
             const unsigned char m_delim;
+            unsigned char m_a;
+            unsigned char m_b;
             char * m_buffer;
         private:
             DataOut() = delete;
@@ -49,8 +51,7 @@ namespace isaki::bitdiff
         public:
             virtual ~HexDataOut();
 
-            // buffer must be at least do_const::UCHAR_HEX_COUNT + 1.
-            HexDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
+            HexDataOut(const char delim);
 
         protected:
             void print(std::ostream& os) const override;
@@ -68,8 +69,7 @@ namespace isaki::bitdiff
         public:
             virtual ~BinaryDataOut();
 
-            // buffer must be at least do_const::UCHAR_BIT_COUNT + 1.
-            BinaryDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
+            BinaryDataOut(const char delim);
 
         protected:
             void print(std::ostream& os) const override;
@@ -87,10 +87,11 @@ namespace isaki::bitdiff
         public:
             virtual ~BitDataOut();
 
-            // buffer must be at least do_const::UCHAR_BIT_COUNT + 1.
-            BitDataOut(const unsigned char dataA, const unsigned char dataB, const char delim, char * buffer);
+            BitDataOut(const char delim);
 
             int getDiffPopCount() const override;
+
+            void init(const unsigned char dataA, const unsigned char dataB) noexcept override;
 
         protected:
             void print(std::ostream& os) const override;
@@ -102,7 +103,7 @@ namespace isaki::bitdiff
 
             using super = DataOut;
 
-            const unsigned char m_xor;
+            unsigned char m_xor;
     };
 
     std::ostream& operator<<(std::ostream& os, const DataOut& obj);
