@@ -19,13 +19,7 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    struct _read_summary_s final
-    {
-        std::streamsize bytesRead;
-        bool eof;
-    };
-
-    struct _read_summary_s _fillBuffer(std::ifstream * in, unsigned char * buffer, const std::streamsize len)
+    std::streamsize _fillBuffer(std::ifstream * in, unsigned char * buffer, const std::streamsize len)
     {
         char * sbuff = reinterpret_cast<char *>(buffer);
 
@@ -36,7 +30,7 @@ namespace
             read += in->gcount();
         }
 
-        return { .bytesRead = read, .eof = in->eof() };
+        return read;
     }
 }
 
@@ -155,15 +149,14 @@ void bd::Reader::run()
             break;
         }
 
-        struct _read_summary_s summary = _fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
-        m_read = summary.bytesRead;
+        m_read = _fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
 
         m_bufferFull.notify_all();
 
-        if (summary.eof)
+        if (m_is->eof())
         {
             // Mark EOF and terminate the thread
-            m_eof = summary.eof;
+            m_eof = true;
             break;
         }
     }
