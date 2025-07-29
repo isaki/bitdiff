@@ -76,7 +76,7 @@ namespace
     // This function is specific to GCC/Clang compilers
     inline int _popcount(unsigned char c) {
 #if defined(__GNUC__)
-        return __builtin_popcount(c);
+        return __builtin_popcount(static_cast<unsigned int>(c));
 #else
 #error "GNU Extensions not supported"
 #endif
