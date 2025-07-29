@@ -99,10 +99,7 @@ std::ostream& bd::operator<<(std::ostream& os, const bd::DataOut& obj)
 
 bd::DataOut::~DataOut()
 {
-    if (m_buffer != nullptr)
-    {
-        delete[] m_buffer;
-    }
+    delete[] m_buffer;
 }
 
 bd::DataOut::DataOut(const char delim, const size_t bufferSize) :
