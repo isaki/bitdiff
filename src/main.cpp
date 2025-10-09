@@ -7,7 +7,7 @@
 #include <string_view>
 #include <cstddef>
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 
 #include "bitdiff/dataout.hpp"
 #include "bitdiff/bitdiff.hpp"
