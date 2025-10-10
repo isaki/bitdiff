@@ -51,7 +51,7 @@ namespace isaki::bitdiff
         public:
             virtual ~HexDataOut();
 
-            HexDataOut(const char delim);
+            explicit HexDataOut(const char delim);
 
         protected:
             void print(std::ostream& os) const override;
@@ -69,7 +69,7 @@ namespace isaki::bitdiff
         public:
             virtual ~BinaryDataOut();
 
-            BinaryDataOut(const char delim);
+            explicit BinaryDataOut(const char delim);
 
         protected:
             void print(std::ostream& os) const override;
@@ -87,7 +87,7 @@ namespace isaki::bitdiff
         public:
             virtual ~BitDataOut();
 
-            BitDataOut(const char delim);
+            explicit BitDataOut(const char delim);
 
             int getDiffPopCount() const override;
 
