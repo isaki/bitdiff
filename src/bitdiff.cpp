@@ -10,7 +10,6 @@
 #include <filesystem>
 #include <string_view>
 
-#include <climits>
 #include <memory>
 
 #include "bitdiff/reader.hpp"
@@ -70,7 +69,7 @@ bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const
 
         // Cleanup will clear valid flag.
         cleanup();
-        throw e;
+        throw;
     }
 }
 
@@ -89,7 +88,7 @@ uintmax_t bd::BitDiff::getFileBSize() const noexcept
     return m_fsize_b;
 }
 
-bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader, const bd::DataOutType type)
+bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader, const DataOutType type)
 {
     if (!m_valid)
     {
@@ -97,7 +96,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
     }
 
     // This will get automatically cleaned when it goes out of scope.
-    const struct _ostream_state_cache_s outputCache = {
+    const _ostream_state_cache_s outputCache = {
         .state = output.exceptions(),
         .flags = output.flags(),
         .s = &output
@@ -153,10 +152,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
         for (size_t i = 0; i < tmpX; ++i)
         {
-            const unsigned char a = m_buffer_a[i];
-            const unsigned char b = m_buffer_b[i];
-
-            if (a != b)
+            if (const unsigned char a = m_buffer_a[i], b = m_buffer_b[i]; a != b)
             {
                 optr->init(a, b);
 
@@ -166,7 +162,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
                 // Output
                 output << "0x" << std::setw(bd::UINTMAX_HEX_COUNT) << bytesRead + static_cast<uintmax_t>(i)
-                    << OUT_DELIM << *(optr.get()) << std::endl;
+                    << OUT_DELIM << *(optr) << std::endl;
             }
         }
 
@@ -184,8 +180,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
         }
     }
 
-    const uintmax_t expected = std::min(m_fsize_a, m_fsize_b);
-    if (bytesRead != expected)
+    if (const uintmax_t expected = std::min(m_fsize_a, m_fsize_b); bytesRead != expected)
     {
         std::string err;
         err.append("Bytes read ");

@@ -8,5 +8,5 @@
 
 namespace isaki::bitdiff
 {
-    void print_version(std::ostream& os, const std::string_view name);
+    void print_version(std::ostream& os, std::string_view name);
 }

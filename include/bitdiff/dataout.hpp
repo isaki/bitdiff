@@ -23,16 +23,20 @@ namespace isaki::bitdiff
 
     class DataOut {
         public:
+            DataOut() = delete;
+            DataOut(const DataOut&) = delete;
+            DataOut & operator=(const DataOut&) = delete;
+
             virtual ~DataOut();
 
-            virtual int getDiffPopCount() const;
+            [[nodiscard]] virtual int getDiffPopCount() const;
 
-            virtual void init(const unsigned char dataA, const unsigned char dataB) noexcept;
+            virtual void init(unsigned char dataA, unsigned char dataB) noexcept;
 
             friend std::ostream& operator<<(std::ostream& os, const DataOut& obj);
 
         protected:
-            DataOut(const char delim, const size_t bufferSize);
+            DataOut(char delim, size_t bufferSize);
 
             virtual void print(std::ostream& os) const = 0;
 
@@ -40,70 +44,66 @@ namespace isaki::bitdiff
             unsigned char m_a;
             unsigned char m_b;
             char * m_buffer;
-        private:
-            DataOut() = delete;
-            DataOut(const DataOut&) = delete;
-            DataOut & operator=(const DataOut&) = delete;
     };
 
     class HexDataOut final : public DataOut
     {
         public:
-            virtual ~HexDataOut();
+            HexDataOut() = delete;
+            HexDataOut(const HexDataOut&) = delete;
+            HexDataOut & operator=(const HexDataOut&) = delete;
 
-            explicit HexDataOut(const char delim);
+            ~HexDataOut() override;
+
+            explicit HexDataOut(char delim);
 
         protected:
             void print(std::ostream& os) const override;
 
         private:
-            HexDataOut() = delete;
-            HexDataOut(const HexDataOut&) = delete;
-            HexDataOut & operator=(const HexDataOut&) = delete;
-
             using super = DataOut;
     };
 
     class BinaryDataOut final : public DataOut
     {
         public:
-            virtual ~BinaryDataOut();
+            BinaryDataOut() = delete;
+            BinaryDataOut(const BinaryDataOut&) = delete;
+            BinaryDataOut & operator=(const BinaryDataOut&) = delete;
 
-            explicit BinaryDataOut(const char delim);
+            ~BinaryDataOut() override;
+
+            explicit BinaryDataOut(char delim);
 
         protected:
             void print(std::ostream& os) const override;
 
         private:
-            BinaryDataOut() = delete;
-            BinaryDataOut(const BinaryDataOut&) = delete;
-            BinaryDataOut & operator=(const BinaryDataOut&) = delete;
-
             using super = DataOut;
     };
 
     class BitDataOut final : public DataOut
     {
         public:
-            virtual ~BitDataOut();
+            BitDataOut() = delete;
+            BitDataOut(const BitDataOut&) = delete;
+            BitDataOut & operator=(const BitDataOut&) = delete;
 
-            explicit BitDataOut(const char delim);
+            ~BitDataOut() override;
 
-            int getDiffPopCount() const override;
+            explicit BitDataOut(char delim);
 
-            void init(const unsigned char dataA, const unsigned char dataB) noexcept override;
+            [[nodiscard]] int getDiffPopCount() const override;
+
+            void init(unsigned char dataA, unsigned char dataB) noexcept override;
 
         protected:
             void print(std::ostream& os) const override;
 
         private:
-            BitDataOut() = delete;
-            BitDataOut(const BitDataOut&) = delete;
-            BitDataOut & operator=(const BitDataOut&) = delete;
+            unsigned char m_xor;
 
             using super = DataOut;
-
-            unsigned char m_xor;
     };
 
     std::ostream& operator<<(std::ostream& os, const DataOut& obj);

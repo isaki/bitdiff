@@ -126,7 +126,7 @@ void bd::DataOut::init(const unsigned char dataA, const unsigned char dataB) noe
 // HEX
 //
 
-bd::HexDataOut::~HexDataOut() {}
+bd::HexDataOut::~HexDataOut() = default;
 
 bd::HexDataOut::HexDataOut(const char delim) :
     super(delim, bd::UCHAR_HEX_COUNT + 1) {}
@@ -147,7 +147,7 @@ void bd::HexDataOut::print(std::ostream& os) const
 // BINARY
 //
 
-bd::BinaryDataOut::~BinaryDataOut() {}
+bd::BinaryDataOut::~BinaryDataOut() = default;
 
 bd::BinaryDataOut::BinaryDataOut(const char delim) :
     super(delim, bd::UCHAR_BIT_COUNT + 1) {}
@@ -168,7 +168,7 @@ void bd::BinaryDataOut::print(std::ostream& os) const
 // BITWISE
 //
 
-bd::BitDataOut::~BitDataOut() {}
+bd::BitDataOut::~BitDataOut() = default;
 
 bd::BitDataOut::BitDataOut(const char delim) :
     super(delim, bd::UCHAR_BIT_COUNT + 1),

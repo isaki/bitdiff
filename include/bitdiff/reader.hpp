@@ -18,10 +18,14 @@ namespace isaki::bitdiff
     class Reader final
     {
         public:
+            Reader() = delete;
+            Reader(const Reader&) = delete;
+            Reader & operator=(const Reader&) = delete;
+
             ~Reader();
 
             // This creates a reader based on a file.
-            Reader(const std::filesystem::path& file, const size_t bufferSize);
+            Reader(const std::filesystem::path& file, size_t bufferSize);
 
             // Buffer must be at least as big as the bufferSize used on
             // construction.
@@ -30,9 +34,6 @@ namespace isaki::bitdiff
             bool eof() noexcept;
 
         private:
-            Reader() = delete;
-            Reader(const Reader&) = delete;
-            Reader & operator=(const Reader&) = delete;
 
             void run();
 

@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <iostream>
 #include <filesystem>
-#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <condition_variable>
@@ -103,7 +102,7 @@ bd::Reader::Reader(const fs::path& file, const size_t bufferSize) :
         // Cleanup will clear valid flag. We don't need lock. If thread threw,
         // we have no thread anyway.
         cleanup();
-        throw e;
+        throw;
     }
 }
 
