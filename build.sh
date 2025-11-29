@@ -31,5 +31,5 @@ fi
 mkdir "${BUILD_DIR}" || exit $?
 
 "${cmake_cmd}" "${extra_opts[@]}" -S . -B "${BUILD_DIR}" || exit $?
-"${cmake_cmd}" --build "${BUILD_DIR}"
+"${cmake_cmd}" --build "${BUILD_DIR}" -- -v
 exit $?
