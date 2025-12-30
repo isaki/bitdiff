@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright 2025 isaki
 
 file(REAL_PATH "${CMAKE_CXX_COMPILER}" REAL_CXX_COMPILER)

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /* Copyright 2025 isaki */
 
 #include <iostream>
@@ -20,7 +20,7 @@ void bd::print_version(std::ostream& os, const std::string_view name)
         << std::endl;
 
     os << "Copyright (C) 2025 isaki@github" << std::endl;
-    os << "License: Apache Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>" << std::endl;
+    os << "License: GNU GPL version 2 or later <https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html>" << std::endl;
     os << name << " comes with NO WARRANTY, to the extent permitted by law" << std::endl;
 
     os << "Home page: <" << bd::cmake::project_url << '>' << std::endl;
@@ -34,6 +34,4 @@ void bd::print_version(std::ostream& os, const std::string_view name)
         << ' '
         << bd::cmake::build_architecture
         << std::endl;
-
-    os << "Written by isaki@github" << std::endl;
 }
