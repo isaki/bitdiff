@@ -3,14 +3,23 @@
 
 #include <mutex>
 #include <thread>
-#include <memory>
-#include <cstddef>
-#include <iostream>
-#include <filesystem>
-#include <cstring>
-#include <fstream>
-#include <condition_variable>
+
+// ReSharper disable once CppUnusedIncludeDirective
 #include <atomic>
+#include <condition_variable>
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cstddef>
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include <cstring>
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
+// ReSharper disable once CppUnusedIncludeDirective
+#include <memory>
 
 #include "bitdiff/reader.hpp"
 
@@ -49,7 +58,7 @@ bd::Reader::~Reader()
         m_bufferFree.notify_all();
         m_bufferFull.notify_all();
 
-        // We need this released so threads can cleanup.
+        // We need this released so threads can clean up.
         lock.unlock();
 
         m_thread->join();

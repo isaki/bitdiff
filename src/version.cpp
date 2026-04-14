@@ -4,19 +4,30 @@
 #include <iostream>
 #include <string_view>
 
-#include "bitdiff_internal/config.hpp"
+#include <boost/version.hpp>
 
+#include "bitdiff_internal/config.hpp"
 #include "bitdiff/version.hpp"
 
 namespace bd = isaki::bitdiff;
+
+namespace
+{
+    //  BOOST_VERSION % 100 is the patch level
+    //  BOOST_VERSION / 100 % 1000 is the minor version
+    //  BOOST_VERSION / 100000 is the major version
+    constexpr int BOOST_VERSION_PATCH = BOOST_VERSION % 100;
+    constexpr int BOOST_VERSION_MINOR = BOOST_VERSION / 100 % 1000;
+    constexpr int BOOST_VERSION_MAJOR = BOOST_VERSION / 100000;
+}
 
 void bd::print_version(std::ostream& os, const std::string_view name)
 {
     os << name
         << " ("
-        << bd::cmake::project_name
+        << cmake::project_name
         << ") v"
-        << bd::cmake::project_version
+        << cmake::project_version
         << std::endl;
 
     os << "Copyright (C) 2025 isaki@github" << std::endl;
@@ -26,12 +37,20 @@ void bd::print_version(std::ostream& os, const std::string_view name)
     os << "Home page: <" << bd::cmake::project_url << '>' << std::endl;
 
     os << "Compiled with: "
-        << bd::cmake::cxx_compiler
+        << cmake::cxx_compiler
         << " v"
-        << bd::cmake::cxx_compiler_ver
+        << cmake::cxx_compiler_ver
         << " for "
-        << bd::cmake::build_platform
+        << cmake::build_platform
         << ' '
-        << bd::cmake::build_architecture
+        << cmake::build_architecture
+        << std::endl;
+
+    os << "Boost: "
+        << BOOST_VERSION_MAJOR
+        << '.'
+        << BOOST_VERSION_MINOR
+        << '.'
+        << BOOST_VERSION_PATCH
         << std::endl;
 }

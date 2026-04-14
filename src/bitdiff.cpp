@@ -5,8 +5,11 @@
 #include <stdexcept>
 #include <algorithm>
 
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cstdint>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cstddef>
+
 #include <filesystem>
 #include <string_view>
 

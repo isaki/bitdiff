@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <string>
 #include <string_view>
+
+// ReSharper disable once CppUnusedIncludeDirective
 #include <cstddef>
 
 #include <boost/program_options.hpp>
@@ -71,24 +73,23 @@ int main(int argc, char ** argv)
         po::store(po::command_line_parser(argc, argv).options(all).positional(posdesc).run(), vm);
         po::notify(vm);
 
-        if (vm.count("version"))
+        if (vm.contains("version"))
         {
             const std::string name = _argv_basename(argv[0]);
             bd::print_version(std::cout, name);
             return 0;
         }
 
-        if (vm.count("help")) {
+        if (vm.contains("help")) {
             const std::string name = _argv_basename(argv[0]);
             _print_help(std::cout, name, desc);
             return 0;
         }
 
         bd::DataOutType dataType;
-        if (vm.count("output-mode"))
+        if (vm.contains("output-mode"))
         {
-            const char mode = vm["output-mode"].as<char>();
-            switch (mode)
+            switch (const char mode = vm["output-mode"].as<char>())
             {
                 case 'a':
                     dataType = bd::DataOutType::Bits;
@@ -112,7 +113,7 @@ int main(int argc, char ** argv)
             dataType = bd::DataOutType::Bits;
         }
 
-        if (!vm.count("fileA") || !vm.count("fileB"))
+        if (!vm.contains("fileA") || !vm.contains("fileB"))
         {
             std::cerr << "Invalid usage; please run with --help" << std::endl;
             return 1;
@@ -134,7 +135,7 @@ int main(int argc, char ** argv)
         std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
         std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;
 
-        const bd::diff_count dcount = diff.process(std::cout, vm.count("print-header"), dataType);
+        const bd::diff_count dcount = diff.process(std::cout, vm.contains("print-header"), dataType);
 
         std::cerr << "Found " << dcount.bits << " bit difference";
         if (dcount.bits != 1)
