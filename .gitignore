@@ -47,6 +47,10 @@
 # Ide files
 /.vscode
 /.vs
+*.kdev
+*.kdev4
+*.kdev_include_paths
+*.kdevelop
 
 # CMake files
 CMakeUserPresets.json
