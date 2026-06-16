@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Copyright 2025 isaki */
+/* Copyright 2025-2026 isaki */
 
 #include <iostream>
 #include <filesystem>
@@ -22,7 +22,7 @@ namespace fs = std::filesystem;
 namespace
 {
     // Default to a 64k buffer
-    inline constexpr size_t READ_BUFFER_LENGTH = 64 * 1024;
+    constexpr size_t READ_BUFFER_LENGTH = 64 * 1024;
 
     std::string _argv_basename(const char * name)
     {

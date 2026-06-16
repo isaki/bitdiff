@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Copyright 2025 isaki */
+/* Copyright 2025-2026 isaki */
 
 #include <mutex>
 #include <thread>

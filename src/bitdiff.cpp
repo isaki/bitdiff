@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Copyright 2025 isaki */
+/* Copyright 2025-2026 isaki */
 
 #include <ostream>
 #include <stdexcept>
@@ -24,7 +24,7 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    inline constexpr char OUT_DELIM = '\t';
+    constexpr char OUT_DELIM = '\t';
 
     struct _ostream_state_cache_s final
     {

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* Copyright 2025 isaki */
+/* Copyright 2025-2026 isaki */
 
 #include <iostream>
 #include <cstddef>
@@ -17,12 +17,12 @@ namespace bd = isaki::bitdiff;
 
 namespace
 {
-    inline constexpr int HEX_RADIX = 16;
-    inline constexpr int BIN_RADIX = 2;
+    constexpr int HEX_RADIX = 16;
+    constexpr int BIN_RADIX = 2;
 
-    inline constexpr char NO_DIFF = '.';
-    inline constexpr std::string_view HEX_PREFIX = "0x";
-    inline constexpr std::string_view BIN_PREFIX = "0b";
+    constexpr char NO_DIFF = '.';
+    constexpr std::string_view HEX_PREFIX = "0x";
+    constexpr std::string_view BIN_PREFIX = "0b";
 
     void _to_bitwise_string(const unsigned char value, const unsigned char x, char * buffer, const size_t bufferSize)
     {
@@ -74,7 +74,7 @@ namespace
     }
 
     // This function is specific to GCC/Clang compilers
-    inline int _popcount(unsigned char c) {
+    int _popcount(unsigned char c) {
 #if defined(__GNUC__)
         return __builtin_popcount(static_cast<unsigned int>(c));
 #else
