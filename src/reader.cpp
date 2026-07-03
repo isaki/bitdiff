@@ -35,7 +35,7 @@ namespace
         std::streamsize read = 0;
         while (read < len && !in->eof())
         {
-            in->read(sbuff, len - read);
+            in->read(sbuff + read, len - read);
             read += in->gcount();
         }
 

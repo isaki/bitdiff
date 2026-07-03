@@ -30,7 +30,7 @@ void bd::print_version(std::ostream& os, const std::string_view name)
         << cmake::project_version
         << std::endl;
 
-    os << "Copyright (C) 2025 isaki@github" << std::endl;
+    os << "Copyright (C) 2025-2026 isaki@github" << std::endl;
     os << "License: GNU GPL version 2 or later <https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html>" << std::endl;
     os << name << " comes with NO WARRANTY, to the extent permitted by law" << std::endl;
 

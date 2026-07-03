@@ -171,7 +171,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
         bytesRead += static_cast<uintmax_t>(tmpX);
 
-        if (m_reader_a->eof() || m_reader_b->eof())
+        if (tmpA == 0 || tmpB == 0)
         {
             std::cerr << "End of one or both files reached" << std::endl;
             break;
