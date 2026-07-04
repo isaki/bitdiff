@@ -44,17 +44,23 @@ if [ "${BUILD_NO_STRIP}" = "1" ]; then
     exit 0
 fi
 
+strip_cmd=$(which strip 2> /dev/null)
+if [ $? -ne 0 ]; then
+    echo "Unable to locate strip; either install strip or run with BUILD_NO_STRIP=1"
+    exit 1
+fi
+
 # Strip targets
 EXE="${BUILD_DIR}/bin/bitdiff"
 if [ -f "${EXE}" ]; then
     osname=$(uname)
     if [ "${osname}" = "Darwin" ]; then
         echo "Stripping macOS executable"
-        strip -u -r "${EXE}"
+        "${strip_cmd}" -u -r "${EXE}"
         buildrc=$?
     else
         echo "Stripping Linux executable"
-        strip --strip-unneeded "${EXE}"
+        "${strip_cmd}" --strip-unneeded "${EXE}"
         buildrc=$?
     fi
 else
