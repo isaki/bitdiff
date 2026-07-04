@@ -26,6 +26,8 @@ namespace isaki::bitdiff
             DataOut() = delete;
             DataOut(const DataOut&) = delete;
             DataOut & operator=(const DataOut&) = delete;
+            DataOut(DataOut&& o) = delete;
+            DataOut & operator=(DataOut&& o) = delete;
 
             virtual ~DataOut();
 
@@ -40,7 +42,7 @@ namespace isaki::bitdiff
 
             virtual void print(std::ostream& os) const = 0;
 
-            const unsigned char m_delim;
+            unsigned char m_delim;
             unsigned char m_a;
             unsigned char m_b;
             char * m_buffer;
@@ -52,6 +54,8 @@ namespace isaki::bitdiff
             HexDataOut() = delete;
             HexDataOut(const HexDataOut&) = delete;
             HexDataOut & operator=(const HexDataOut&) = delete;
+            HexDataOut(HexDataOut&& o) = delete;
+            HexDataOut & operator=(HexDataOut&& o) = delete;
 
             ~HexDataOut() override;
 
@@ -70,6 +74,8 @@ namespace isaki::bitdiff
             BinaryDataOut() = delete;
             BinaryDataOut(const BinaryDataOut&) = delete;
             BinaryDataOut & operator=(const BinaryDataOut&) = delete;
+            BinaryDataOut(BinaryDataOut&& o) = delete;
+            BinaryDataOut & operator=(BinaryDataOut&& o) = delete;
 
             ~BinaryDataOut() override;
 
@@ -88,6 +94,8 @@ namespace isaki::bitdiff
             BitDataOut() = delete;
             BitDataOut(const BitDataOut&) = delete;
             BitDataOut & operator=(const BitDataOut&) = delete;
+            BitDataOut(BitDataOut&& o) = delete;
+            BitDataOut & operator=(BitDataOut&& o) = delete;
 
             ~BitDataOut() override;
 

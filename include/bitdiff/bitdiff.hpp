@@ -26,6 +26,8 @@ namespace isaki::bitdiff
             BitDiff() = delete;
             BitDiff(const BitDiff&) = delete;
             BitDiff & operator=(const BitDiff&) = delete;
+            BitDiff(BitDiff&&) = delete;
+            BitDiff & operator=(BitDiff&&) = delete;
 
             BitDiff(const std::string_view& a, const std::string_view& b, size_t bufferSize);
             ~BitDiff();

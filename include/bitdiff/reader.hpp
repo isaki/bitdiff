@@ -21,6 +21,8 @@ namespace isaki::bitdiff
             Reader() = delete;
             Reader(const Reader&) = delete;
             Reader & operator=(const Reader&) = delete;
+            Reader(Reader&&) = delete;
+            Reader & operator=(Reader&&) = delete;
 
             ~Reader();
 
