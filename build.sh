@@ -32,4 +32,34 @@ mkdir "${BUILD_DIR}" || exit $?
 
 "${cmake_cmd}" "${extra_opts[@]}" -S . -B "${BUILD_DIR}" || exit $?
 "${cmake_cmd}" --build "${BUILD_DIR}" -- -v
-exit $?
+
+buildrc=$?
+if [ $buildrc -ne 0 ]; then
+    echo "Build failure!"
+    exit $buildrc
+fi
+
+if [ "${BUILD_NO_STRIP}" = "1" ]; then
+    echo "Binary strip disabled"
+    exit 0
+fi
+
+# Strip targets
+EXE="${BUILD_DIR}/bin/bitdiff"
+if [ -f "${EXE}" ]; then
+    osname=$(uname)
+    if [ "${osname}" = "Darwin" ]; then
+        echo "Stripping macOS executable"
+        strip -u -r "${EXE}"
+        buildrc=$?
+    else
+        echo "Stripping Linux executable"
+        strip --strip-unneeded "${EXE}"
+        buildrc=$?
+    fi
+else
+    echo "Unable to locate ${EXE}"
+    buildrc=1
+fi
+
+exit $buildrc
