@@ -51,6 +51,7 @@
 *.kdev4
 *.kdev_include_paths
 *.kdevelop
+*.kate-swp
 
 # CMake files
 CMakeUserPresets.json
