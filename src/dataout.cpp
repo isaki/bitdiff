@@ -68,8 +68,8 @@ namespace
             // The number of characters we need to move.
             const ptrdiff_t difference = full - offset;
 
-            memmove(start + offset, start, difference);
-            memset(start, '0', offset);
+            std::memmove(start + offset, start, difference);
+            std::memset(start, '0', offset);
         }
     }
 

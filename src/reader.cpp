@@ -129,7 +129,7 @@ size_t bd::Reader::read(unsigned char * buffer)
     std::streamsize ret = 0;
     if (m_read > 0)
     {
-        memcpy(buffer, m_buffer, static_cast<size_t>(m_read));
+        std::memcpy(buffer, m_buffer, static_cast<size_t>(m_read));
         ret = m_read;
         m_read = 0;
     }
