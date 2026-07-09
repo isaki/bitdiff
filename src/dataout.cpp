@@ -11,6 +11,9 @@
 // We need to be able to move memory as required
 #include <cstring>
 
+// replace GCC built in popcount with C++ 20 version
+#include <bit>
+
 #include "bitdiff/dataout.hpp"
 
 namespace bd = isaki::bitdiff;
@@ -24,11 +27,11 @@ namespace
     constexpr std::string_view HEX_PREFIX = "0x";
     constexpr std::string_view BIN_PREFIX = "0b";
 
-    void _to_bitwise_string(const unsigned char value, const unsigned char x, char * buffer, const size_t bufferSize)
+    void to_bitwise_string(char* buffer, const std::size_t tokenSize, const unsigned char value, const unsigned char x)
     {
-        for (size_t i = 0; i < bufferSize; ++i)
+        for (std::size_t i = 0; i < tokenSize; ++i)
         {
-            const size_t shift = bufferSize - i - 1;
+            const std::size_t shift = tokenSize - i - 1;
 
             if (((x >> shift) & 1) == 0)
             {
@@ -45,11 +48,11 @@ namespace
         }
     }
 
-    void _to_chars(char * start, char * end, const unsigned char value, const int radix)
+    void to_chars(char* start, char* end, const unsigned char value, const int radix)
     {
         auto result = std::to_chars(start, end, value, radix);
 
-        if (result.ec != std::errc())
+        if (result.ec != std::errc()) [[unlikely]]
         {
             throw std::runtime_error(std::make_error_code(result.ec).message());
         }
@@ -72,25 +75,6 @@ namespace
             std::memset(start, '0', offset);
         }
     }
-
-    // This function is specific to GCC/Clang compilers
-    int _popcount(unsigned char c) {
-#if defined(__GNUC__)
-        return __builtin_popcount(static_cast<unsigned int>(c));
-#else
-#error "GNU Extensions not supported"
-#endif
-    }
-}
-
-//
-// OPERATORS
-//
-
-std::ostream& bd::operator<<(std::ostream& os, const bd::DataOut& obj)
-{
-    obj.print(os);
-    return os;
 }
 
 //
@@ -102,21 +86,32 @@ bd::DataOut::~DataOut()
     delete[] m_buffer;
 }
 
-bd::DataOut::DataOut(const char delim, const size_t bufferSize) :
-    m_delim(delim),
+bd::DataOut::DataOut(std::string_view prefix, std::size_t tokenSize, char delim) :
+    m_tokenSize(tokenSize),
+    m_buffer(nullptr),
+    m_posA(nullptr),
+    m_posB(nullptr),
     m_a(0),
-    m_b(0),
-    m_buffer(nullptr)
+    m_b(0)
 {
-    m_buffer = new char[bufferSize];
+    const std::size_t prefixLen = prefix.size();
+
+    m_buffer = new char[((tokenSize + prefixLen) * 2) + 2](); // calloc/memset zero
+    m_posA = m_buffer + prefixLen;
+    m_posB = m_buffer + (2 * prefixLen) + tokenSize + 1;
+
+    m_buffer[tokenSize + prefixLen] = delim;
+
+    std::memcpy(m_buffer, prefix.data(), prefixLen);
+    std::memcpy(m_buffer + prefixLen + tokenSize + 1, prefix.data(), prefixLen);
 }
 
 int bd::DataOut::getDiffPopCount() const
 {
-    return _popcount(m_a ^ m_b);
+    return std::popcount<unsigned char>(m_a ^ m_b);
 }
 
-void bd::DataOut::init(const unsigned char dataA, const unsigned char dataB) noexcept
+void bd::DataOut::init(unsigned char dataA, unsigned char dataB) noexcept
 {
     m_a = dataA;
     m_b = dataB;
@@ -128,19 +123,16 @@ void bd::DataOut::init(const unsigned char dataA, const unsigned char dataB) noe
 
 bd::HexDataOut::~HexDataOut() = default;
 
-bd::HexDataOut::HexDataOut(const char delim) :
-    super(delim, bd::UCHAR_HEX_COUNT + 1) {}
+bd::HexDataOut::HexDataOut(char delim) :
+    super(HEX_PREFIX, bd::UCHAR_HEX_COUNT, delim) {}
 
 void bd::HexDataOut::print(std::ostream& os) const
 {
-    // Ensure we end up null terminated for all operations.
-    m_buffer[UCHAR_HEX_COUNT] = '\0';
-
-    _to_chars(m_buffer, m_buffer + UCHAR_HEX_COUNT, m_a, HEX_RADIX);
-    os << HEX_PREFIX << m_buffer << m_delim;
-
-    _to_chars(m_buffer, m_buffer + UCHAR_HEX_COUNT, m_b, HEX_RADIX);
-    os << HEX_PREFIX << m_buffer;
+    printBuffer(os, [](char* buff, std::size_t len, unsigned char value)
+    {
+        to_chars(buff, buff + len, value, HEX_RADIX);
+    }
+    );
 }
 
 //
@@ -149,19 +141,16 @@ void bd::HexDataOut::print(std::ostream& os) const
 
 bd::BinaryDataOut::~BinaryDataOut() = default;
 
-bd::BinaryDataOut::BinaryDataOut(const char delim) :
-    super(delim, bd::UCHAR_BIT_COUNT + 1) {}
+bd::BinaryDataOut::BinaryDataOut(char delim) :
+    super(BIN_PREFIX, bd::UCHAR_BIT_COUNT, delim) {}
 
 void bd::BinaryDataOut::print(std::ostream& os) const
 {
-    // Ensure we end up null terminated for all operations.
-    m_buffer[UCHAR_BIT_COUNT] = '\0';
-
-    _to_chars(m_buffer, m_buffer + UCHAR_BIT_COUNT, m_a, BIN_RADIX);
-    os << BIN_PREFIX << m_buffer << m_delim;
-
-    _to_chars(m_buffer, m_buffer + UCHAR_BIT_COUNT, m_b, BIN_RADIX);
-    os << BIN_PREFIX << m_buffer;
+    printBuffer(os, [](char* buff, std::size_t len, unsigned char value)
+    {
+        to_chars(buff, buff + len, value, BIN_RADIX);
+    }
+    );
 }
 
 //
@@ -170,16 +159,16 @@ void bd::BinaryDataOut::print(std::ostream& os) const
 
 bd::BitDataOut::~BitDataOut() = default;
 
-bd::BitDataOut::BitDataOut(const char delim) :
-    super(delim, bd::UCHAR_BIT_COUNT + 1),
+bd::BitDataOut::BitDataOut(char delim) :
+    super(BIN_PREFIX, bd::UCHAR_BIT_COUNT, delim),
     m_xor(0) {}
 
 int bd::BitDataOut::getDiffPopCount() const
 {
-    return _popcount(m_xor);
+    return std::popcount<unsigned char>(m_xor);
 }
 
-void bd::BitDataOut::init(const unsigned char dataA, const unsigned char dataB) noexcept
+void bd::BitDataOut::init(unsigned char dataA, unsigned char dataB) noexcept
 {
     super::init(dataA, dataB);
     m_xor = dataA ^ dataB;
@@ -187,12 +176,9 @@ void bd::BitDataOut::init(const unsigned char dataA, const unsigned char dataB) 
 
 void bd::BitDataOut::print(std::ostream& os) const
 {
-    // Ensure we end up null terminated for all operations.
-    m_buffer[UCHAR_BIT_COUNT] = '\0';
-
-    _to_bitwise_string(m_a, m_xor, m_buffer, UCHAR_BIT_COUNT);
-    os << BIN_PREFIX << m_buffer << m_delim;
-
-    _to_bitwise_string(m_b, m_xor, m_buffer, UCHAR_BIT_COUNT);
-    os << BIN_PREFIX << m_buffer;
+    printBuffer(os, [x = m_xor](char* buff, std::size_t len, unsigned char value)
+    {
+        to_bitwise_string(buff, len, value, x);
+    }
+    );
 }

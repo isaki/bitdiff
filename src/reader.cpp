@@ -28,9 +28,9 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    std::streamsize _fillBuffer(std::ifstream * in, unsigned char * buffer, const std::streamsize len)
+    std::streamsize fillBuffer(std::ifstream * in, unsigned char* buffer, const std::streamsize len)
     {
-        char * sbuff = reinterpret_cast<char *>(buffer);
+        char* sbuff = reinterpret_cast<char*>(buffer);
 
         std::streamsize read = 0;
         while (read < len && !in->eof())
@@ -74,7 +74,7 @@ bd::Reader::~Reader()
     // Lock releases when going out of scope.
 }
 
-bd::Reader::Reader(const fs::path& file, const size_t bufferSize) :
+bd::Reader::Reader(const fs::path& file, const std::size_t bufferSize) :
     m_bsize(bufferSize),
     m_read(0),
     m_eof(false),
@@ -115,7 +115,7 @@ bd::Reader::Reader(const fs::path& file, const size_t bufferSize) :
     }
 }
 
-size_t bd::Reader::read(unsigned char * buffer)
+std::size_t bd::Reader::read(unsigned char* buffer)
 {
     // This is effectively a consumer.
     std::unique_lock<std::mutex> lock(m_mtx);
@@ -129,14 +129,14 @@ size_t bd::Reader::read(unsigned char * buffer)
     std::streamsize ret = 0;
     if (m_read > 0)
     {
-        std::memcpy(buffer, m_buffer, static_cast<size_t>(m_read));
+        std::memcpy(buffer, m_buffer, static_cast<std::size_t>(m_read));
         ret = m_read;
         m_read = 0;
     }
 
     m_bufferFree.notify_all();
 
-    return static_cast<size_t>(ret);
+    return static_cast<std::size_t>(ret);
 }
 
 bool bd::Reader::eof() noexcept
@@ -158,7 +158,7 @@ void bd::Reader::run()
             break;
         }
 
-        m_read = _fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
+        m_read = fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
 
         m_bufferFull.notify_all();
 

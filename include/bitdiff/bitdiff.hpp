@@ -16,8 +16,8 @@ namespace isaki::bitdiff
 {
     typedef struct final
     {
-        uintmax_t bytes;
-        uintmax_t bits;
+        std::uintmax_t bytes;
+        std::uintmax_t bits;
     } diff_count;
 
     class BitDiff final
@@ -29,20 +29,20 @@ namespace isaki::bitdiff
             BitDiff(BitDiff&&) = delete;
             BitDiff & operator=(BitDiff&&) = delete;
 
-            BitDiff(const std::string_view& a, const std::string_view& b, size_t bufferSize);
+            BitDiff(const std::string_view& a, const std::string_view& b, std::size_t bufferSize);
             ~BitDiff();
 
             // Returns the number of differences.
             diff_count process(std::ostream& output, bool printHeader, DataOutType type);
 
-            [[nodiscard]] uintmax_t getFileASize() const noexcept;
-            [[nodiscard]] uintmax_t getFileBSize() const noexcept;
+            [[nodiscard]] std::uintmax_t getFileASize() const noexcept;
+            [[nodiscard]] std::uintmax_t getFileBSize() const noexcept;
 
         private:
             void cleanup() noexcept;
 
-            uintmax_t m_fsize_a;
-            uintmax_t m_fsize_b;
+            std::uintmax_t m_fsize_a;
+            std::uintmax_t m_fsize_b;
             bool m_valid;
 
             std::filesystem::path m_path_a;

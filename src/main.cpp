@@ -22,16 +22,16 @@ namespace fs = std::filesystem;
 namespace
 {
     // Default to a 64k buffer
-    constexpr size_t READ_BUFFER_LENGTH = 64 * 1024;
+    constexpr std::size_t READ_BUFFER_LENGTH = 64 * 1024;
 
-    std::string _argv_basename(const char * name)
+    std::string argv_basename(const char* name)
     {
         const std::string_view tmp(name);
         const fs::path p(tmp);
         return p.filename().string();
     }
 
-    void _print_help(std::ostream& os, const std::string_view name, const po::options_description& desc)
+    void print_help(std::ostream& os, const std::string_view name, const po::options_description& desc)
     {
         os << name << " <fileA> <fileB>" << std::endl << std::endl;
         os << desc << std::endl;
@@ -43,7 +43,7 @@ namespace
     }
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
     try
     {
@@ -75,14 +75,14 @@ int main(int argc, char ** argv)
 
         if (vm.contains("version"))
         {
-            const std::string name = _argv_basename(argv[0]);
+            const std::string name = argv_basename(argv[0]);
             bd::print_version(std::cout, name);
             return 0;
         }
 
         if (vm.contains("help")) {
-            const std::string name = _argv_basename(argv[0]);
-            _print_help(std::cout, name, desc);
+            const std::string name = argv_basename(argv[0]);
+            print_help(std::cout, name, desc);
             return 0;
         }
 

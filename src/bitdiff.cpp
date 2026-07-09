@@ -43,7 +43,7 @@ namespace
     };
 }
 
-bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const size_t bufferSize) :
+bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const std::size_t bufferSize) :
     m_valid(true),
     m_buffer_a(nullptr),
     m_buffer_b(nullptr),
@@ -81,12 +81,12 @@ bd::BitDiff::~BitDiff()
     cleanup();
 }
 
-uintmax_t bd::BitDiff::getFileASize() const noexcept
+std::uintmax_t bd::BitDiff::getFileASize() const noexcept
 {
     return m_fsize_a;
 }
 
-uintmax_t bd::BitDiff::getFileBSize() const noexcept
+std::uintmax_t bd::BitDiff::getFileBSize() const noexcept
 {
     return m_fsize_b;
 }
@@ -121,7 +121,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
     }
 
     // First, we need to read from each buffer.
-    uintmax_t bytesRead = 0;
+    std::uintmax_t bytesRead = 0;
     bd::diff_count ret = { .bytes = 0, .bits = 0 };
 
     if (printHeader)
@@ -148,12 +148,12 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
     for (;;)
     {
-        const size_t tmpA = m_reader_a->read(m_buffer_a);
-        const size_t tmpB = m_reader_b->read(m_buffer_b);
+        const std::size_t tmpA = m_reader_a->read(m_buffer_a);
+        const std::size_t tmpB = m_reader_b->read(m_buffer_b);
 
-        const size_t tmpX = std::min(tmpA, tmpB);
+        const std::size_t tmpX = std::min(tmpA, tmpB);
 
-        for (size_t i = 0; i < tmpX; ++i)
+        for (std::size_t i = 0; i < tmpX; ++i)
         {
             if (const unsigned char a = m_buffer_a[i], b = m_buffer_b[i]; a != b)
             {
@@ -161,15 +161,15 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
                 // Counters
                 ++ret.bytes;
-                ret.bits += static_cast<uintmax_t>(optr->getDiffPopCount());
+                ret.bits += static_cast<std::uintmax_t>(optr->getDiffPopCount());
 
                 // Output
-                output << "0x" << std::setw(bd::UINTMAX_HEX_COUNT) << bytesRead + static_cast<uintmax_t>(i)
+                output << "0x" << std::setw(bd::UINTMAX_HEX_COUNT) << bytesRead + static_cast<std::uintmax_t>(i)
                     << OUT_DELIM << *(optr) << std::endl;
             }
         }
 
-        bytesRead += static_cast<uintmax_t>(tmpX);
+        bytesRead += static_cast<std::uintmax_t>(tmpX);
 
         if (tmpA == 0 || tmpB == 0)
         {
@@ -183,7 +183,7 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
         }
     }
 
-    if (const uintmax_t expected = std::min(m_fsize_a, m_fsize_b); bytesRead != expected)
+    if (const std::uintmax_t expected = std::min(m_fsize_a, m_fsize_b); bytesRead != expected)
     {
         std::string err;
         err.append("Bytes read ");

@@ -27,11 +27,11 @@ namespace isaki::bitdiff
             ~Reader();
 
             // This creates a reader based on a file.
-            Reader(const std::filesystem::path& file, size_t bufferSize);
+            Reader(const std::filesystem::path& file, std::size_t bufferSize);
 
             // Buffer must be at least as big as the bufferSize used on
             // construction.
-            size_t read(unsigned char * buffer);
+            std::size_t read(unsigned char * buffer);
 
             bool eof() noexcept;
 
@@ -41,7 +41,7 @@ namespace isaki::bitdiff
 
             void cleanup() noexcept;
 
-            const size_t m_bsize;
+            const std::size_t m_bsize;
 
             // Thread control; this is NOT reentrant.
             std::mutex m_mtx;
