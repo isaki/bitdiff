@@ -18,13 +18,9 @@ namespace isaki::bitdiff
         template <typename F>
         concept BuildFunction = requires(F f, char* ptr, std::size_t size, unsigned char value)
         {
-            { f(ptr, size, value) } -> std::same_as<void>;
+            { f(ptr, size, value) } noexcept -> std::same_as<void>;
         };
     }
-
-    inline constexpr std::size_t UCHAR_HEX_COUNT = sizeof(unsigned char) * (CHAR_BIT >> 2);
-    inline constexpr std::size_t UCHAR_BIT_COUNT = sizeof(unsigned char) * CHAR_BIT;
-    inline constexpr std::size_t UINTMAX_HEX_COUNT = sizeof(std::uintmax_t) * (CHAR_BIT >> 2);
 
     enum class DataOutType
     {
@@ -46,7 +42,7 @@ namespace isaki::bitdiff
 
         [[nodiscard]] virtual int getDiffPopCount() const;
 
-        virtual void init(unsigned char dataA, unsigned char dataB) noexcept;
+        virtual void init(std::uintmax_t address, unsigned char dataA, unsigned char dataB) noexcept;
 
         virtual void print(std::ostream& os) const = 0;
 
@@ -61,14 +57,26 @@ namespace isaki::bitdiff
             f(m_posA, m_tokenSize, m_a);
             f(m_posB, m_tokenSize, m_b);
 
-            os << m_buffer;
+            os.write(m_buffer, m_recordSize);
         }
 
     private:
-        std::size_t m_tokenSize;
-        mutable char* m_buffer;
-        mutable char* m_posA;
-        mutable char* m_posB;
+        // Keep pointer-sized members grouped to minimize padding.
+
+        // Invariant state
+        const std::size_t m_tokenSize;
+        const std::size_t m_recordSize;
+
+        // Scratch buffers
+        // This is temporary storage. The memory these pointers reference
+        // may be modified even in const methods because it is not part of
+        // the object's logical state.
+        char* m_buffer;
+        char* m_posAddr;
+        char* m_posA;
+        char* m_posB;
+
+        // Variant state
         unsigned char m_a;
         unsigned char m_b;
     };
@@ -126,7 +134,7 @@ namespace isaki::bitdiff
 
         [[nodiscard]] int getDiffPopCount() const override;
 
-        void init(unsigned char dataA, unsigned char dataB) noexcept override;
+        void init(std::uintmax_t address, unsigned char dataA, unsigned char dataB) noexcept override;
 
         void print(std::ostream& os) const  override;
 
@@ -135,10 +143,4 @@ namespace isaki::bitdiff
 
         using super = DataOut;
     };
-
-    inline std::ostream& operator<<(std::ostream& os, const DataOut& obj)
-    {
-        obj.print(os);
-        return os;
-    }
 }

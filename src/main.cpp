@@ -37,9 +37,9 @@ namespace
         os << desc << std::endl;
 
         os << "Output Modes:" << std::endl;
-        os << "  a : Output the byte differences in bit difference format (default)." << std::endl;
-        os << "  b : Output the byte differences in binary format." << std::endl;
-        os << "  x : Output the byte differences in hexidecimal format." << std::endl;
+        os << "  a : Bit difference format (default)." << std::endl;
+        os << "  b : Binary format." << std::endl;
+        os << "  x : Hexadecimal format." << std::endl;
     }
 }
 
@@ -50,10 +50,11 @@ int main(int argc, char** argv)
         // Declare the supported options.
         po::options_description desc("Options");
         desc.add_options()
-            ("help,h", "print this message message")
-            ("version,v", "display version information")
-            ("print-header,p", "add a header to the output")
-            ("output-mode,m", po::value<char>(), "The operating mode")
+            ("help,h", "Print this message.")
+            ("version,v", "Display version information.")
+            ("print-header,p", "Add a header to the output.")
+            ("fast,f", "Disable flushing after each result line. Improves throughput when redirecting output.")
+            ("output-mode,m", po::value<char>(), "The operating mode.")
         ;
 
         po::options_description hidden("Hidden options");
@@ -130,7 +131,7 @@ int main(int argc, char** argv)
 
         std::cerr << "Initializing diff object" << std::endl;
 
-        bd::BitDiff diff(fileA, fileB, READ_BUFFER_LENGTH);
+        bd::BitDiff diff(fileA, fileB, READ_BUFFER_LENGTH, vm.contains("fast"));
 
         std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
         std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;

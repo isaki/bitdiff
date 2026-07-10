@@ -41,14 +41,28 @@ namespace
             }
         }
     };
+
+    template<bool Fast>
+    void newline(std::ostream& os)
+    {
+        if constexpr (Fast)
+        {
+            os.write("\n", 1);
+        }
+        else
+        {
+            os << std::endl;
+        }
+    }
 }
 
-bd::BitDiff::BitDiff(const std::string_view& a, const std::string_view& b, const std::size_t bufferSize) :
-    m_valid(true),
+bd::BitDiff::BitDiff(std::string_view a, std::string_view b, std::size_t bufferSize, bool fastMode) :
     m_buffer_a(nullptr),
     m_buffer_b(nullptr),
     m_reader_a(nullptr),
-    m_reader_b(nullptr)
+    m_reader_b(nullptr),
+    m_newline((fastMode) ? newline<true> : newline<false>),
+    m_valid(true)
 {
     // Temp values
     try
@@ -126,7 +140,8 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
 
     if (printHeader)
     {
-        output << "Offset\tByte in " << m_path_a << "\tByte in " << m_path_b << std::endl;
+        output << "Offset\tByte in " << m_path_a << "\tByte in " << m_path_b;
+        m_newline(output);
     }
 
     // Setup for output.
@@ -157,15 +172,15 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
         {
             if (const unsigned char a = m_buffer_a[i], b = m_buffer_b[i]; a != b)
             {
-                optr->init(a, b);
+                optr->init(bytesRead + static_cast<std::uintmax_t>(i), a, b);
 
                 // Counters
                 ++ret.bytes;
                 ret.bits += static_cast<std::uintmax_t>(optr->getDiffPopCount());
 
-                // Output
-                output << "0x" << std::setw(bd::UINTMAX_HEX_COUNT) << bytesRead + static_cast<std::uintmax_t>(i)
-                    << OUT_DELIM << *(optr) << std::endl;
+                // We could use the stream operator, but a raw write is faster.
+                optr->print(output);
+                m_newline(output);
             }
         }
 

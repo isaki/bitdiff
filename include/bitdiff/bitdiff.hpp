@@ -14,11 +14,11 @@
 
 namespace isaki::bitdiff
 {
-    typedef struct final
+    struct diff_count
     {
         std::uintmax_t bytes;
         std::uintmax_t bits;
-    } diff_count;
+    };
 
     class BitDiff final
     {
@@ -29,29 +29,33 @@ namespace isaki::bitdiff
             BitDiff(BitDiff&&) = delete;
             BitDiff & operator=(BitDiff&&) = delete;
 
-            BitDiff(const std::string_view& a, const std::string_view& b, std::size_t bufferSize);
+            BitDiff(std::string_view a, std::string_view b, std::size_t bufferSize, bool fastMode);
             ~BitDiff();
 
             // Returns the number of differences.
-            diff_count process(std::ostream& output, bool printHeader, DataOutType type);
+            [[nodiscard]] diff_count process(std::ostream& output, bool printHeader, DataOutType type);
 
             [[nodiscard]] std::uintmax_t getFileASize() const noexcept;
             [[nodiscard]] std::uintmax_t getFileBSize() const noexcept;
 
         private:
+            using NewlineFunc = void (*)(std::ostream&);
+
             void cleanup() noexcept;
 
             std::uintmax_t m_fsize_a;
             std::uintmax_t m_fsize_b;
-            bool m_valid;
 
             std::filesystem::path m_path_a;
             std::filesystem::path m_path_b;
 
-            unsigned char * m_buffer_a;
-            unsigned char * m_buffer_b;
+            unsigned char* m_buffer_a;
+            unsigned char* m_buffer_b;
 
-            Reader * m_reader_a;
-            Reader * m_reader_b;
+            Reader* m_reader_a;
+            Reader* m_reader_b;
+
+            NewlineFunc m_newline;
+            bool m_valid;
     };
 }

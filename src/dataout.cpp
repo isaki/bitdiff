@@ -3,16 +3,21 @@
 
 #include <iostream>
 #include <cstddef>
+#include <cstdint>
 #include <charconv>
 #include <stdexcept>
 #include <system_error>
 #include <string_view>
+#include <cassert>
 
 // We need to be able to move memory as required
 #include <cstring>
 
 // replace GCC built in popcount with C++ 20 version
 #include <bit>
+
+// Compile time safety
+#include <type_traits>
 
 #include "bitdiff/dataout.hpp"
 
@@ -27,7 +32,11 @@ namespace
     constexpr std::string_view HEX_PREFIX = "0x";
     constexpr std::string_view BIN_PREFIX = "0b";
 
-    void to_bitwise_string(char* buffer, const std::size_t tokenSize, const unsigned char value, const unsigned char x)
+    constexpr std::size_t UCHAR_HEX_COUNT = sizeof(unsigned char) * (CHAR_BIT >> 2);
+    constexpr std::size_t UCHAR_BIT_COUNT = sizeof(unsigned char) * CHAR_BIT;
+    constexpr std::size_t UINTMAX_HEX_COUNT = sizeof(std::uintmax_t) * (CHAR_BIT >> 2);
+
+    void to_bitwise_string(char* buffer, const std::size_t tokenSize, const unsigned char value, const unsigned char x) noexcept
     {
         for (std::size_t i = 0; i < tokenSize; ++i)
         {
@@ -48,28 +57,28 @@ namespace
         }
     }
 
-    void to_chars(char* start, char* end, const unsigned char value, const int radix)
+    template<typename T>
+    requires std::is_integral_v<T> && std::is_unsigned_v<T>
+    void to_chars(char* start, char* end, const T value, const int radix) noexcept
     {
         auto result = std::to_chars(start, end, value, radix);
 
-        if (result.ec != std::errc()) [[unlikely]]
-        {
-            throw std::runtime_error(std::make_error_code(result.ec).message());
-        }
-        else if (result.ptr != end)
+        assert(result.ec == std::errc());
+
+        if (result.ptr != end)
         {
             // We didn't fill. We can rely on filling the stream and have to
             // manage the ostream flags, or, we can shift the data and pad in
             // our own zeros (the character, not the number);
 
              // How many characters we need to fill.
-            const ptrdiff_t offset = end - result.ptr;
+            const std::ptrdiff_t offset = end - result.ptr;
 
             // The full size of the buffer we need to fill.
-            const ptrdiff_t full = end - start;
+            const std::ptrdiff_t full = end - start;
 
             // The number of characters we need to move.
-            const ptrdiff_t difference = full - offset;
+            const std::ptrdiff_t difference = full - offset;
 
             std::memmove(start + offset, start, difference);
             std::memset(start, '0', offset);
@@ -88,22 +97,54 @@ bd::DataOut::~DataOut()
 
 bd::DataOut::DataOut(std::string_view prefix, std::size_t tokenSize, char delim) :
     m_tokenSize(tokenSize),
+    m_recordSize(HEX_PREFIX.size() + UINTMAX_HEX_COUNT
+        + 1
+        + prefix.size() + tokenSize
+        + 1
+        + prefix.size() + tokenSize),
     m_buffer(nullptr),
+    m_posAddr(nullptr),
     m_posA(nullptr),
     m_posB(nullptr),
     m_a(0),
     m_b(0)
 {
-    const std::size_t prefixLen = prefix.size();
+    //
+    // --- Allocate scratch space --- //
+    //
 
-    m_buffer = new char[((tokenSize + prefixLen) * 2) + 2](); // calloc/memset zero
-    m_posA = m_buffer + prefixLen;
-    m_posB = m_buffer + (2 * prefixLen) + tokenSize + 1;
+    m_buffer = new char[m_recordSize]; // memset no longer needed, raw buffer, not a string
 
-    m_buffer[tokenSize + prefixLen] = delim;
+    //
+    // --- Cache mutable scratch regions of memory --- //
+    //
 
-    std::memcpy(m_buffer, prefix.data(), prefixLen);
-    std::memcpy(m_buffer + prefixLen + tokenSize + 1, prefix.data(), prefixLen);
+    m_posAddr = m_buffer + HEX_PREFIX.size();
+
+    // A starts address and 1 delim, and one token prefix after m_posAddr.
+    m_posA = m_posAddr + UINTMAX_HEX_COUNT + prefix.size() + 1;
+
+    // B is 1 token, 1 delim, and one token prefix past A.
+    m_posB = m_posA + prefix.size() + tokenSize + 1;
+
+    //
+    // --- Populate static regions of scratch memory --- //
+    //
+
+    // Address prefix
+    std::memcpy(m_buffer, HEX_PREFIX.data(), HEX_PREFIX.size());
+
+    // delim after address
+    m_posAddr[UINTMAX_HEX_COUNT] = delim;
+
+    // First token prefix
+    std::memcpy(m_posA - prefix.size(), prefix.data(), prefix.size());
+
+    // delim after first token
+    m_posA[tokenSize] = delim;
+
+    // Second token prefix.
+    std::memcpy(m_posB - prefix.size(), prefix.data(), prefix.size());
 }
 
 int bd::DataOut::getDiffPopCount() const
@@ -111,8 +152,9 @@ int bd::DataOut::getDiffPopCount() const
     return std::popcount<unsigned char>(m_a ^ m_b);
 }
 
-void bd::DataOut::init(unsigned char dataA, unsigned char dataB) noexcept
+void bd::DataOut::init(std::uintmax_t address, unsigned char dataA, unsigned char dataB) noexcept
 {
+    to_chars<std::uintmax_t>(m_posAddr, m_posAddr + UINTMAX_HEX_COUNT, address, HEX_RADIX);
     m_a = dataA;
     m_b = dataB;
 }
@@ -124,13 +166,13 @@ void bd::DataOut::init(unsigned char dataA, unsigned char dataB) noexcept
 bd::HexDataOut::~HexDataOut() = default;
 
 bd::HexDataOut::HexDataOut(char delim) :
-    super(HEX_PREFIX, bd::UCHAR_HEX_COUNT, delim) {}
+    super(HEX_PREFIX, UCHAR_HEX_COUNT, delim) {}
 
 void bd::HexDataOut::print(std::ostream& os) const
 {
-    printBuffer(os, [](char* buff, std::size_t len, unsigned char value)
+    printBuffer(os, [](char* buff, std::size_t len, unsigned char value) noexcept
     {
-        to_chars(buff, buff + len, value, HEX_RADIX);
+        to_chars<unsigned char>(buff, buff + len, value, HEX_RADIX);
     }
     );
 }
@@ -142,13 +184,13 @@ void bd::HexDataOut::print(std::ostream& os) const
 bd::BinaryDataOut::~BinaryDataOut() = default;
 
 bd::BinaryDataOut::BinaryDataOut(char delim) :
-    super(BIN_PREFIX, bd::UCHAR_BIT_COUNT, delim) {}
+    super(BIN_PREFIX, UCHAR_BIT_COUNT, delim) {}
 
 void bd::BinaryDataOut::print(std::ostream& os) const
 {
-    printBuffer(os, [](char* buff, std::size_t len, unsigned char value)
+    printBuffer(os, [](char* buff, std::size_t len, unsigned char value) noexcept
     {
-        to_chars(buff, buff + len, value, BIN_RADIX);
+        to_chars<unsigned char>(buff, buff + len, value, BIN_RADIX);
     }
     );
 }
@@ -160,7 +202,7 @@ void bd::BinaryDataOut::print(std::ostream& os) const
 bd::BitDataOut::~BitDataOut() = default;
 
 bd::BitDataOut::BitDataOut(char delim) :
-    super(BIN_PREFIX, bd::UCHAR_BIT_COUNT, delim),
+    super(BIN_PREFIX, UCHAR_BIT_COUNT, delim),
     m_xor(0) {}
 
 int bd::BitDataOut::getDiffPopCount() const
@@ -168,15 +210,15 @@ int bd::BitDataOut::getDiffPopCount() const
     return std::popcount<unsigned char>(m_xor);
 }
 
-void bd::BitDataOut::init(unsigned char dataA, unsigned char dataB) noexcept
+void bd::BitDataOut::init(std::uintmax_t address, unsigned char dataA, unsigned char dataB) noexcept
 {
-    super::init(dataA, dataB);
+    super::init(address, dataA, dataB);
     m_xor = dataA ^ dataB;
 }
 
 void bd::BitDataOut::print(std::ostream& os) const
 {
-    printBuffer(os, [x = m_xor](char* buff, std::size_t len, unsigned char value)
+    printBuffer(os, [x = m_xor](char* buff, std::size_t len, unsigned char value) noexcept
     {
         to_bitwise_string(buff, len, value, x);
     }
