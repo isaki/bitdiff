@@ -15,16 +15,18 @@ The `bitdiff` application will be located in `<checkout location>/build/bin`.
 
 # Usage
 ```
-$ bitdiff --help
 bitdiff <fileA> <fileB>
 
 Options:
-  -h [ --help ]            print this message message
-  -v [ --version ]         display version information
-  -p [ --print-header ]    add a header to the output
-  -m [ --output-mode ] arg The operating mode
+  -h [ --help ]            Print this message.
+  -v [ --version ]         Display version information.
+  -p [ --print-header ]    Add a header to the output.
+  -f [ --fast ]            Disable flushing after each result line. Improves 
+                           throughput when redirecting output.
+  -m [ --output-mode ] arg The operating mode.
 
 Output Modes:
-  a : Output the byte differences in bit difference format (default).
-  b : Output the byte differences in binary format.
-  x : Output the byte differences in hexidecimal format.
+  a : Bit difference format (default).
+  b : Binary format.
+  x : Hexadecimal format.
+```
