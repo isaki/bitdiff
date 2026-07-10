@@ -17,47 +17,47 @@ namespace isaki::bitdiff
 {
     class Reader final
     {
-        public:
-            Reader() = delete;
-            Reader(const Reader&) = delete;
-            Reader & operator=(const Reader&) = delete;
-            Reader(Reader&&) = delete;
-            Reader & operator=(Reader&&) = delete;
+    public:
+        Reader() = delete;
+        Reader(const Reader&) = delete;
+        Reader& operator=(const Reader&) = delete;
+        Reader(Reader&&) = delete;
+        Reader& operator=(Reader&&) = delete;
 
-            ~Reader();
+        ~Reader();
 
-            // This creates a reader based on a file.
-            Reader(const std::filesystem::path& file, std::size_t bufferSize);
+        // This creates a reader based on a file.
+        Reader(const std::filesystem::path& file, std::size_t bufferSize);
 
-            // Buffer must be at least as big as the bufferSize used on
-            // construction.
-            std::size_t read(unsigned char * buffer);
+        // Buffer must be at least as big as the bufferSize used on
+        // construction.
+        std::size_t read(unsigned char * buffer);
 
-            bool eof() noexcept;
+        bool eof() noexcept;
 
-        private:
+    private:
 
-            void run();
+        void run();
 
-            void cleanup() noexcept;
+        void cleanup() noexcept;
 
-            const std::size_t m_bsize;
+        const std::size_t m_bsize;
 
-            // Thread control; this is NOT reentrant.
-            std::mutex m_mtx;
-            std::condition_variable m_bufferFull;
-            std::condition_variable m_bufferFree;
-            std::streamsize m_read;
-            bool m_eof;
+        // Thread control; this is NOT reentrant.
+        std::mutex m_mtx;
+        std::condition_variable m_bufferFull;
+        std::condition_variable m_bufferFree;
+        std::streamsize m_read;
+        bool m_eof;
 
-            // The thread.
-            std::atomic_bool m_stop;
-            std::thread * m_thread;
+        // The thread.
+        std::atomic_bool m_stop;
+        std::thread* m_thread;
 
-            // The stream
-            std::ifstream * m_is;
+        // The stream
+        std::ifstream* m_is;
 
-            // The data
-            unsigned char * m_buffer;
+        // The data
+        unsigned char* m_buffer;
     };
 }
