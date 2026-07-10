@@ -11,7 +11,7 @@ add_executable(bitdiff
 
 target_include_directories(bitdiff
     PRIVATE
-    "${CMAKE_BINARY_DIR}/configured_files/include"
+    "${PROJECT_BINARY_DIR}/configured_files/include"
     "${PROJECT_SOURCE_DIR}/include"
 )
 
