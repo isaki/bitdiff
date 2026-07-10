@@ -45,6 +45,11 @@ namespace
 
 int main(int argc, char** argv)
 {
+    // Improve performance for high-volume output.
+    // Safe because we only use C++ streams for output (no mixing with C stdio).
+    std::ios_base::sync_with_stdio(false);
+    std::cout.tie(nullptr);
+
     try
     {
         // Declare the supported options.

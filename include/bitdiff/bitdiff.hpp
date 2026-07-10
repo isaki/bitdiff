@@ -10,7 +10,6 @@
 #include <filesystem>
 
 #include "bitdiff/reader.hpp"
-#include "bitdiff/bitdiff.hpp"
 
 namespace isaki::bitdiff
 {
