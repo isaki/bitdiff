@@ -21,8 +21,9 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    // Default to a 64k buffer
-    constexpr std::size_t READ_BUFFER_LENGTH = 64 * 1024;
+    // Default to a 2 MiB
+    constexpr std::size_t READ_BUFFER_LENGTH = 2 * 1024 * 1024;
+    constexpr std::size_t KIB_PER_GIB = 0x100000;
 
     std::string argv_basename(const char* name)
     {
@@ -64,6 +65,7 @@ int main(int argc, char** argv)
 
         po::options_description hidden("Hidden options");
         hidden.add_options()
+            ("read-buffer", po::value<std::size_t>(), "The size of read buffer in KiB satisfying [1KiB, 1GiB]")
             ("fileA", po::value<std::string>(), "The file A to diff")
             ("fileB", po::value<std::string>(), "The file B to diff")
         ;
@@ -92,6 +94,30 @@ int main(int argc, char** argv)
             return 0;
         }
 
+        if (!vm.contains("fileA") || !vm.contains("fileB"))
+        {
+            std::cerr << "Invalid usage; please run with --help" << std::endl;
+            return 1;
+        }
+
+        std::size_t readBufferLength;
+        if (vm.contains("read-buffer"))
+        {
+            readBufferLength = vm["read-buffer"].as<std::size_t>();
+            if (readBufferLength == 0 || readBufferLength > KIB_PER_GIB)
+            {
+                std::cerr << "Invalid --read-buffer; please run with --help" << std::endl;
+                return 1;
+            }
+
+            // Convert KiB to bytes.
+            readBufferLength = readBufferLength << 10;
+        }
+        else
+        {
+            readBufferLength = READ_BUFFER_LENGTH;
+        }
+
         bd::DataOutType dataType;
         if (vm.contains("output-mode"))
         {
@@ -117,12 +143,6 @@ int main(int argc, char** argv)
         else
         {
             dataType = bd::DataOutType::Bits;
-        }
-
-        if (!vm.contains("fileA") || !vm.contains("fileB"))
-        {
-            std::cerr << "Invalid usage; please run with --help" << std::endl;
-            return 1;
         }
 
         const std::string fileA = vm["fileA"].as<std::string>();

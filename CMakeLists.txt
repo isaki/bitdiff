@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 4.0.3)
 
 project(
     BitDiff
-    VERSION 1.4.2
+    VERSION 1.4.3
     LANGUAGES CXX
     HOMEPAGE_URL "https://github.com/isaki/bitdiff")
 
@@ -18,7 +18,7 @@ set(CMAKE_CXX_EXTENSIONS Off)
 set(CMAKE_POSITION_INDEPENDENT_CODE On)
 
 # Compiler flags
-add_compile_options(-O2 -pipe -Wall -Wextra -Wpedantic -Werror -Wimplicit-fallthrough -Wformat)
+add_compile_options(-O3 -march=native -pipe -Wall -Wextra -Wpedantic -Werror -Wimplicit-fallthrough -Wformat)
 
 # Compiler Specific Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

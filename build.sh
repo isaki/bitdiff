@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright 2025-2026 isaki
 
@@ -22,6 +22,13 @@ else
     fi
 
     extra_opts=("-G" "Unix Makefiles")
+fi
+
+# Compiler checks
+which clang > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    export CC="clang"
+    export CXX="clang++"
 fi
 
 if [ -d "${BUILD_DIR}" ]; then
