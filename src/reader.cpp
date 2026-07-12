@@ -4,8 +4,6 @@
 #include <mutex>
 #include <thread>
 
-// ReSharper disable once CppUnusedIncludeDirective
-#include <atomic>
 #include <condition_variable>
 
 // ReSharper disable once CppUnusedIncludeDirective
@@ -18,8 +16,7 @@
 #include <fstream>
 #include <iostream>
 
-// ReSharper disable once CppUnusedIncludeDirective
-#include <memory>
+#include <exception>
 
 #include "bitdiff/reader.hpp"
 
@@ -46,40 +43,24 @@ namespace
 bd::Reader::~Reader()
 {
     // Create the lock, but unlocked
-    std::unique_lock<std::mutex> lock(m_mtx, std::defer_lock);
+    m_thread.request_stop();
 
-    // Set the atomic boolean before taking the lock.
-    m_stop = true;
+    // Wake blocked threads so they can observe shutdown.
+    m_bufferFree.notify_all();
+    m_bufferFull.notify_all();
 
-    // Lock for safe data access.
-    lock.lock();
-    if (m_thread != nullptr)
-    {
-        m_bufferFree.notify_all();
-        m_bufferFull.notify_all();
+    // Join the threads.
+    m_thread.join();
 
-        // We need this released so threads can clean up.
-        lock.unlock();
-
-        m_thread->join();
-
-        // We can now restore the lock state.
-        lock.lock();
-        delete m_thread;
-        m_thread = nullptr;
-    }
-
+    // Teardown everything else.
     cleanup();
-
-    // Lock releases when going out of scope.
 }
 
 bd::Reader::Reader(const fs::path& file, const std::size_t bufferSize) :
     m_bsize(bufferSize),
+    m_error(nullptr),
     m_read(0),
-    m_eof(false),
-    m_stop(false),
-    m_thread(nullptr),
+    m_eos(false),
     m_is(nullptr),
     m_buffer(nullptr)
 {
@@ -102,7 +83,7 @@ bd::Reader::Reader(const fs::path& file, const std::size_t bufferSize) :
         m_buffer = new unsigned char[bufferSize];
 
         // This must be the last call before the end of the try block.
-        m_thread = new std::thread(&bd::Reader::run, this);
+        m_thread = std::jthread([this](std::stop_token stop) { this->run(stop); });
     }
     catch (const std::exception& e)
     {
@@ -119,11 +100,15 @@ std::size_t bd::Reader::read(unsigned char* buffer)
 {
     // This is effectively a consumer.
     std::unique_lock<std::mutex> lock(m_mtx);
-    m_bufferFull.wait(lock, [this] { return this->m_read > 0 || this->m_eof || this->m_stop.load(); });
 
-    if (m_stop.load())
+    m_bufferFull.wait(lock, [this]
     {
-        throw std::runtime_error("Unexpected reader thread termination");
+        return this->m_read > 0 || this->m_eos;
+    });
+
+    if (m_error) [[unlikely]]
+    {
+        std::rethrow_exception(m_error);
     }
 
     std::streamsize ret = 0;
@@ -134,40 +119,47 @@ std::size_t bd::Reader::read(unsigned char* buffer)
         m_read = 0;
     }
 
-    m_bufferFree.notify_all();
+    m_bufferFree.notify_one();
 
     return static_cast<std::size_t>(ret);
 }
 
-bool bd::Reader::eof() noexcept
+void bd::Reader::run(std::stop_token stop)
 {
-    std::unique_lock<std::mutex> lock(m_mtx);
-    return m_eof;
-}
-
-void bd::Reader::run()
-{
-    while (! m_stop.load())
+    try
     {
-        // This is the producer and the thread.
-        std::unique_lock<std::mutex> lock(m_mtx);
-        m_bufferFree.wait(lock, [this] { return this->m_read == 0 || this->m_stop.load(); });
-
-        if (m_stop.load())
+        for (;;)
         {
-            break;
+            // This is the producer and the thread.
+            std::unique_lock<std::mutex> lock(m_mtx);
+            m_bufferFree.wait(lock, [this, stop] { return this->m_read == 0 || stop.stop_requested(); });
+
+            if (stop.stop_requested())
+            {
+                m_eos = true;
+                m_bufferFull.notify_all();
+                break;
+            }
+
+            m_read = fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
+
+            if (m_read == 0)
+            {
+                m_eos = true;
+                m_bufferFull.notify_all();
+                break;
+            }
+
+            // else
+            m_bufferFull.notify_one();
         }
-
-        m_read = fillBuffer(m_is, m_buffer, static_cast<std::streamsize>(m_bsize));
-
+    }
+    catch (...)
+    {
+        std::scoped_lock<std::mutex> lock(m_mtx);
+        m_error = std::current_exception();
+        m_eos = true;
         m_bufferFull.notify_all();
-
-        if (m_is->eof())
-        {
-            // Mark EOF and terminate the thread
-            m_eof = true;
-            break;
-        }
     }
 
     // End of thread reached.
@@ -200,6 +192,4 @@ void bd::Reader::cleanup() noexcept
         delete m_is;
         m_is = nullptr;
     }
-
-    m_eof = true;
 }

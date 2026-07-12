@@ -173,8 +173,7 @@ void bd::HexDataOut::print(std::ostream& os) const
     printBuffer(os, [](char* buff, std::size_t len, unsigned char value) noexcept
     {
         to_chars<unsigned char>(buff, buff + len, value, HEX_RADIX);
-    }
-    );
+    });
 }
 
 //
@@ -191,8 +190,7 @@ void bd::BinaryDataOut::print(std::ostream& os) const
     printBuffer(os, [](char* buff, std::size_t len, unsigned char value) noexcept
     {
         to_chars<unsigned char>(buff, buff + len, value, BIN_RADIX);
-    }
-    );
+    });
 }
 
 //
@@ -221,6 +219,5 @@ void bd::BitDataOut::print(std::ostream& os) const
     printBuffer(os, [x = m_xor](char* buff, std::size_t len, unsigned char value) noexcept
     {
         to_bitwise_string(buff, len, value, x);
-    }
-    );
+    });
 }

@@ -10,8 +10,7 @@
 #include <cstddef>
 #include <condition_variable>
 #include <thread>
-#include <cstdint>
-#include <atomic>
+#include <exception>
 
 namespace isaki::bitdiff
 {
@@ -33,31 +32,31 @@ namespace isaki::bitdiff
         // construction.
         std::size_t read(unsigned char * buffer);
 
-        bool eof() noexcept;
-
     private:
 
-        void run();
+        void run(std::stop_token stop);
 
         void cleanup() noexcept;
 
         const std::size_t m_bsize;
+
+        // Additional error tracking
+        std::exception_ptr m_error;
 
         // Thread control; this is NOT reentrant.
         std::mutex m_mtx;
         std::condition_variable m_bufferFull;
         std::condition_variable m_bufferFree;
         std::streamsize m_read;
-        bool m_eof;
-
-        // The thread.
-        std::atomic_bool m_stop;
-        std::thread* m_thread;
+        bool m_eos;
 
         // The stream
         std::ifstream* m_is;
 
         // The data
         unsigned char* m_buffer;
+
+        // Thread must outlive resources used by run()
+        std::jthread m_thread;
     };
 }
