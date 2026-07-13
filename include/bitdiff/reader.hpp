@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <condition_variable>
 #include <thread>
+#include <stop_token>
 #include <exception>
 
 namespace isaki::bitdiff
@@ -46,7 +47,7 @@ namespace isaki::bitdiff
         // Thread control; this is NOT reentrant.
         std::mutex m_mtx;
         std::condition_variable m_bufferFull;
-        std::condition_variable m_bufferFree;
+        std::condition_variable_any m_bufferFree;
         std::streamsize m_read;
         bool m_eos;
 

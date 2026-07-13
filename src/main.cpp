@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 
         std::cerr << "Initializing diff object" << std::endl;
 
-        bd::BitDiff diff(fileA, fileB, READ_BUFFER_LENGTH, vm.contains("fast"));
+        bd::BitDiff diff(fileA, fileB, readBufferLength, vm.contains("fast"));
 
         std::cerr << "Size " << fileA << ": " << diff.getFileASize() << std::endl;
         std::cerr << "Size " << fileB << ": " << diff.getFileBSize() << std::endl;

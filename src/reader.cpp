@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <thread>
+#include <stop_token>
 
 #include <condition_variable>
 
@@ -43,11 +44,13 @@ namespace
 bd::Reader::~Reader()
 {
     // Create the lock, but unlocked
+    // This will wake the producer (blocking on std::condition_variable_any)
+    // The producer will mark m_eos, then notify all waiting threads.
+    // The extra notify isn't needed really, since this should be called from
+    // withing the consumer thread. In the event the main thread becomes orchestration,
+    // this still works, because the notify will wake the consumer(s) and m_eos will be set,
+    // they will be done, and will join.
     m_thread.request_stop();
-
-    // Wake blocked threads so they can observe shutdown.
-    m_bufferFree.notify_all();
-    m_bufferFull.notify_all();
 
     // Join the threads.
     m_thread.join();
@@ -132,7 +135,7 @@ void bd::Reader::run(std::stop_token stop)
         {
             // This is the producer and the thread.
             std::unique_lock<std::mutex> lock(m_mtx);
-            m_bufferFree.wait(lock, [this, stop] { return this->m_read == 0 || stop.stop_requested(); });
+            m_bufferFree.wait(lock, stop, [this] { return this->m_read == 0; });
 
             if (stop.stop_requested())
             {
