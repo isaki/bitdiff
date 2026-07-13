@@ -30,10 +30,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_CURRENT_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_CURRENT_BINARY_DIR}/lib")
 
-# Include Boost
-set(Boost_USE_STATIC_LIBS OFF)
-find_package(Boost REQUIRED COMPONENTS program_options)
-
 # Add the directories
 add_subdirectory(configured_files)
 add_subdirectory(src)
