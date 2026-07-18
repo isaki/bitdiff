@@ -2,7 +2,7 @@
 # Copyright 2025-2026 isaki
 
 # Include Boost
-set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS program_options)
 find_package(Threads REQUIRED)
 
