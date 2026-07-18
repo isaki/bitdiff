@@ -26,18 +26,23 @@ namespace
 {
     constexpr char OUT_DELIM = '\t';
 
-    struct _ostream_state_cache_s final
+    struct ostream_state_cache_s
     {
+        std::ostream* s;
         std::ostream::iostate state;
-        std::ostream::fmtflags flags;
-        std::ostream * s;
 
-        ~_ostream_state_cache_s()
+        ~ostream_state_cache_s()
         {
             if (s != nullptr)
             {
-                s->exceptions(state);
-                s->flags(flags);
+                try
+                {
+                    s->exceptions(state);
+                }
+                catch (...)
+                {
+                    // Do nothing. This is best effort.
+                }
             }
         }
     };
@@ -113,14 +118,12 @@ bd::diff_count bd::BitDiff::process(std::ostream& output, const bool printHeader
     }
 
     // This will get automatically cleaned when it goes out of scope.
-    const _ostream_state_cache_s outputCache = {
-        .state = output.exceptions(),
-        .flags = output.flags(),
-        .s = &output
+    const ostream_state_cache_s outputCache = {
+        .s = &output,
+        .state = output.exceptions()
     };
 
     output.exceptions(std::ostream::failbit | std::ostream::badbit);
-    output << std::hex << std::setfill('0');
 
     m_valid = false;
 
