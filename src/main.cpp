@@ -34,12 +34,12 @@ namespace
 
     void print_help(std::ostream& os, const std::string_view name, const po::options_description& desc)
     {
-        os << name << " <fileA> <fileB>" << std::endl << std::endl;
+        os << name << " <fileA> <fileB>\n" << std::endl;
         os << desc << std::endl;
 
-        os << "Output Modes:" << std::endl;
-        os << "  a : Bit difference format (default)." << std::endl;
-        os << "  b : Binary format." << std::endl;
+        os << "Output Modes:\n";
+        os << "  a : Bit difference format (default).\n";
+        os << "  b : Binary format.\n";
         os << "  x : Hexadecimal format." << std::endl;
     }
 }
