@@ -7,10 +7,7 @@
 
 #include <condition_variable>
 
-// ReSharper disable once CppUnusedIncludeDirective
 #include <cstddef>
-
-// ReSharper disable once CppUnusedIncludeDirective
 #include <cstring>
 
 #include <filesystem>
@@ -18,6 +15,7 @@
 #include <iostream>
 
 #include <exception>
+#include <stdexcept>
 
 #include "bitdiff/reader.hpp"
 
