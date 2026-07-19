@@ -9,6 +9,8 @@ project(
     LANGUAGES CXX
     HOMEPAGE_URL "https://github.com/isaki/bitdiff")
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 # Configure C++20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
