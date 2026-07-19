@@ -34,7 +34,7 @@ void bd::print_version(std::ostream& os, const std::string_view name)
     os << "License: GNU GPL version 2 or later <https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html>" << std::endl;
     os << name << " comes with NO WARRANTY, to the extent permitted by law" << std::endl;
 
-    os << "Home page: <" << bd::cmake::project_url << '>' << std::endl;
+    os << "Home page: <" << cmake::project_url << '>' << std::endl;
 
     os << "Compiled with: "
         << cmake::cxx_compiler
