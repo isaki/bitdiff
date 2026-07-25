@@ -69,7 +69,12 @@ bd::Reader::Reader(const fs::path& file, const std::size_t bufferSize) :
     {
         // First can we even create the stream?
         m_is = new std::ifstream();
+        m_is->exceptions(std::ifstream::badbit);
+
         m_is->open(file, std::ios_base::binary | std::ios_base::in);
+
+        // Since exceptions are not set for failbit, we have to check this
+        // ourselves.
         if (!m_is->is_open())
         {
             std::string err;
@@ -77,8 +82,6 @@ bd::Reader::Reader(const fs::path& file, const std::size_t bufferSize) :
             err.append(file.string());
             throw std::runtime_error(err);
         }
-
-        m_is->exceptions(std::ifstream::badbit);
 
         // We don't need to zero memory here.
         m_buffer = new unsigned char[bufferSize];
