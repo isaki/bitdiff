@@ -113,7 +113,7 @@ namespace isaki::bitdiff
 
         explicit BinaryDataOut(char delim);
 
-        void print(std::ostream& os) const  override;
+        void print(std::ostream& os) const override;
 
     private:
         using super = DataOut;
@@ -136,7 +136,7 @@ namespace isaki::bitdiff
 
         void init(std::uintmax_t address, unsigned char dataA, unsigned char dataB) noexcept override;
 
-        void print(std::ostream& os) const  override;
+        void print(std::ostream& os) const override;
 
     private:
         unsigned char m_xor;
