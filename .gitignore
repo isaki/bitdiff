@@ -47,6 +47,7 @@
 # Ide files
 /.vscode
 /.vs
+/.idea
 *.kdev
 *.kdev4
 *.kdev_include_paths

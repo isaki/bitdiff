@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 4.0.3)
 
 project(
     BitDiff
-    VERSION 1.4.6
+    VERSION 1.4.7
     LANGUAGES CXX
     HOMEPAGE_URL "https://github.com/isaki/bitdiff")
 
