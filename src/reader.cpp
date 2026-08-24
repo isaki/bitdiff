@@ -41,7 +41,6 @@ namespace
 
 bd::Reader::~Reader()
 {
-    // Create the lock, but unlocked
     // This will wake the producer (blocking on std::condition_variable_any)
     // The producer will mark m_eos, then notify all waiting threads.
     // The extra notify isn't needed really, since this should be called from
