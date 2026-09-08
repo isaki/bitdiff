@@ -3,6 +3,12 @@
 
 cmake_minimum_required(VERSION 4.0.3)
 
+# Nothing is initialzied, so full path to SDK helper
+if (APPLE)
+    include("${CMAKE_CURRENT_LIST_DIR}/cmake/IsakiAppleSDK.cmake")
+    isaki_initialize_apple()
+endif()
+
 project(
     BitDiff
     VERSION 1.4.7

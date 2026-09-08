@@ -3,6 +3,10 @@
 
 include(IsakiStrip)
 
+if (APPLE)
+    include(IsakiAppleSDK)
+endif()
+
 # Include Boost
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS program_options)
@@ -23,5 +27,9 @@ target_include_directories(bitdiff
 )
 
 target_link_libraries(bitdiff PRIVATE Threads::Threads Boost::program_options)
+
+if (APPLE)
+    isaki_configure_apple(bitdiff)
+endif()
 
 isaki_strip(bitdiff)
