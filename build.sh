@@ -5,18 +5,18 @@
 BUILD_DIR="./build"
 
 cmake_cmd=$(which cmake 2> /dev/null)
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Unable to locate cmake"
     exit 1
 fi
 
 build_cmd=$(which ninja 2> /dev/null)
 
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
     extra_opts=("-G" "Ninja")
 else
     build_cmd=$(which make 2> /dev/null)
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo "Unable to locate ninja or make"
         exit 1
     fi
@@ -25,13 +25,15 @@ else
 fi
 
 # Compiler checks
-which clang > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    export CC="clang"
-    export CXX="clang++"
+if [[ -z "${CC}" && -z "${CXX}" ]]; then
+    which clang > /dev/null 2>&1
+    if [[ $? -eq 0 ]]; then
+        export CC="clang"
+        export CXX="clang++"
+    fi
 fi
 
-if [ -d "${BUILD_DIR}" ]; then
+if [[ -d "${BUILD_DIR}" ]]; then
     rm -rf "${BUILD_DIR}" || exit $?
 fi
 
@@ -41,7 +43,7 @@ mkdir "${BUILD_DIR}" || exit $?
 "${cmake_cmd}" --build "${BUILD_DIR}" -- -v
 
 buildrc=$?
-if [ $buildrc -ne 0 ]; then
+if [[ $buildrc -ne 0 ]]; then
     echo "Build failure!"
     exit $buildrc
 fi
